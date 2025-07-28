@@ -1,7 +1,18 @@
 "use client"
+import React from "react";
+
+interface User {
+  firstName: string;
+  lastName: string;
+  role: string;
+  station: {
+    name: string;
+  };
+  loginTime: string;
+}
 
 interface DashboardProps {
-  user: any
+  user: User;
 }
 
 export default function Dashboard({ user }: DashboardProps) {
@@ -124,13 +135,13 @@ export default function Dashboard({ user }: DashboardProps) {
               key={index}
               disabled={action.disabled}
               className={`${
-                action.disabled ? "bg-gray-300 cursor-not-allowed" : `${action.color} text-white`
+                action.disabled ? "bg-gray-100 border border-gray-200 cursor-not-allowed" : `${action.color} text-white`
               } p-6 rounded-lg text-left transition-colors`}
             >
               <div className="text-3xl mb-3">{action.icon}</div>
-              <h3 className="font-semibold mb-1">{action.title}</h3>
+              <h3 className={`font-semibold mb-1 ${action.disabled ? "text-gray-700" : ""}`}>{action.title}</h3>
               <p className={`text-sm ${action.disabled ? "text-gray-600" : "text-white/80"}`}>{action.description}</p>
-              {action.comingSoon && <p className="text-xs mt-2 text-gray-600">Coming in {action.comingSoon}</p>}
+              {action.comingSoon && <p className="text-xs mt-2 text-gray-500">Coming in {action.comingSoon}</p>}
             </button>
           ))}
         </div>

@@ -5,16 +5,29 @@ import { mockUsers } from "@/data/mockData"
 import AddUserModal from "./AddUserModal"
 import EditUserModal from "./EditUserModal"
 
+interface User {
+  id: number;
+  firstName: string;
+  lastName: string;
+  username: string;
+  password: string;
+  email: string;
+  role: string;
+  status: string;
+  assignedStations: string[];
+  createdAt: string;
+}
+
 interface UserManagementProps {
-  user: any
+  user: User;
 }
 
 export default function UserManagement({ user }: UserManagementProps) {
-  const [users, setUsers] = useState(mockUsers)
+  const [users, setUsers] = useState<User[]>(mockUsers)
   const [showAddModal, setShowAddModal] = useState(false)
-  const [editingUser, setEditingUser] = useState(null)
+  const [editingUser, setEditingUser] = useState<User | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
-  const [sortField, setSortField] = useState("firstName")
+  const [sortField, setSortField] = useState<keyof User>("firstName")
   const [sortDirection, setSortDirection] = useState("asc")
 
   // Check if user has permission
@@ -30,8 +43,8 @@ export default function UserManagement({ user }: UserManagementProps) {
     )
   }
 
-  const handleAddUser = (newUser) => {
-    const userWithId = {
+  const handleAddUser = (newUser: Omit<User, 'id' | 'createdAt' | 'status'>) => {
+    const userWithId: User = {
       ...newUser,
       id: users.length + 1,
       createdAt: new Date().toISOString(),
@@ -41,12 +54,12 @@ export default function UserManagement({ user }: UserManagementProps) {
     setShowAddModal(false)
   }
 
-  const handleEditUser = (updatedUser) => {
+  const handleEditUser = (updatedUser: User) => {
     setUsers(users.map((u) => (u.id === updatedUser.id ? updatedUser : u)))
     setEditingUser(null)
   }
 
-  const handleDeleteUser = (userId) => {
+  const handleDeleteUser = (userId: number) => {
     if (userId === user.id) {
       alert("You cannot delete your own account")
       return
@@ -75,7 +88,7 @@ export default function UserManagement({ user }: UserManagementProps) {
     }
   })
 
-  const handleSort = (field) => {
+  const handleSort = (field: keyof User) => {
     if (sortField === field) {
       setSortDirection(sortDirection === "asc" ? "desc" : "asc")
     } else {
@@ -112,28 +125,28 @@ export default function UserManagement({ user }: UserManagementProps) {
         <div className="overflow-x-auto">
           <table className="w-full border-collapse">
             <thead>
-              <tr className="border-b border-gray-200">
+              <tr className="border-b border-gray-200 bg-gray-50">
                 <th
-                  className="text-left py-3 px-4 font-semibold cursor-pointer hover:bg-gray-50"
+                  className="text-left py-3 px-4 font-semibold text-gray-800 cursor-pointer hover:bg-gray-100"
                   onClick={() => handleSort("firstName")}
                 >
                   Name {sortField === "firstName" && (sortDirection === "asc" ? "↑" : "↓")}
                 </th>
                 <th
-                  className="text-left py-3 px-4 font-semibold cursor-pointer hover:bg-gray-50"
+                  className="text-left py-3 px-4 font-semibold text-gray-800 cursor-pointer hover:bg-gray-100"
                   onClick={() => handleSort("username")}
                 >
                   Username {sortField === "username" && (sortDirection === "asc" ? "↑" : "↓")}
                 </th>
                 <th
-                  className="text-left py-3 px-4 font-semibold cursor-pointer hover:bg-gray-50"
+                  className="text-left py-3 px-4 font-semibold text-gray-800 cursor-pointer hover:bg-gray-100"
                   onClick={() => handleSort("role")}
                 >
                   Role {sortField === "role" && (sortDirection === "asc" ? "↑" : "↓")}
                 </th>
-                <th className="text-left py-3 px-4 font-semibold">Email</th>
-                <th className="text-left py-3 px-4 font-semibold">Status</th>
-                <th className="text-left py-3 px-4 font-semibold">Actions</th>
+                <th className="text-left py-3 px-4 font-semibold text-gray-800">Email</th>
+                <th className="text-left py-3 px-4 font-semibold text-gray-800">Status</th>
+                <th className="text-left py-3 px-4 font-semibold text-gray-800">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -141,12 +154,12 @@ export default function UserManagement({ user }: UserManagementProps) {
                 <tr key={u.id} className="border-b border-gray-100 hover:bg-gray-50">
                   <td className="py-3 px-4">
                     <div>
-                      <div className="font-medium">
+                      <div className="font-medium text-gray-900">
                         {u.firstName} {u.lastName}
                       </div>
                     </div>
                   </td>
-                  <td className="py-3 px-4">{u.username}</td>
+                  <td className="py-3 px-4 text-gray-700">{u.username}</td>
                   <td className="py-3 px-4">
                     <span
                       className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -160,7 +173,7 @@ export default function UserManagement({ user }: UserManagementProps) {
                       {u.role}
                     </span>
                   </td>
-                  <td className="py-3 px-4">{u.email}</td>
+                  <td className="py-3 px-4 text-gray-700">{u.email}</td>
                   <td className="py-3 px-4">
                     <span
                       className={`px-2 py-1 rounded-full text-xs font-medium ${

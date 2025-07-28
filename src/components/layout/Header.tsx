@@ -15,7 +15,7 @@ export default function Header({ user, onLogout }: HeaderProps) {
           <div className="flex items-center space-x-4">
             <h1 className="text-2xl font-bold text-blue-600">OneStep POS</h1>
             <div className="text-sm text-gray-600">
-              Station: <span className="font-medium">{user.station.name}</span>
+              Station: <span className="font-medium text-gray-800">{user.station.name}</span>
             </div>
           </div>
 
@@ -26,7 +26,7 @@ export default function Header({ user, onLogout }: HeaderProps) {
                 <div className="font-medium text-gray-900">
                   {user.firstName} {user.lastName}
                 </div>
-                <div className="text-gray-600">{user.role}</div>
+                <div className="text-gray-700">{user.role}</div>
               </div>
               <button
                 onClick={onLogout}

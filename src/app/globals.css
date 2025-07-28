@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f9fafb;
+  --foreground: #111827;
 }
 
 @theme inline {
@@ -23,4 +23,29 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Ensure proper contrast for disabled elements */
+.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Improve button contrast */
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Better text contrast for gray backgrounds */
+.text-gray-600 {
+  color: #4b5563;
+}
+
+.text-gray-700 {
+  color: #374151;
+}
+
+.text-gray-800 {
+  color: #1f2937;
 }
