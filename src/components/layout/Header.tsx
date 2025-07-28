@@ -1,8 +1,32 @@
 "use client"
 
+interface User {
+  id: number;
+  firstName: string;
+  lastName: string;
+  username: string;
+  password: string;
+  email: string;
+  role: string;
+  status: string;
+  assignedStations: string[];
+  createdAt: string;
+  station: {
+    id: string;
+    name: string;
+    location: string;
+    status: string;
+    ipAddress: string;
+    printerName: string;
+    cashDrawer: string;
+  };
+  loginTime: string;
+  rememberMe: boolean;
+}
+
 interface HeaderProps {
-  user: any
-  onLogout: () => void
+  user: User;
+  onLogout: () => void;
 }
 
 export default function Header({ user, onLogout }: HeaderProps) {

@@ -1,9 +1,33 @@
 "use client"
 
+interface User {
+  id: number;
+  firstName: string;
+  lastName: string;
+  username: string;
+  password: string;
+  email: string;
+  role: string;
+  status: string;
+  assignedStations: string[];
+  createdAt: string;
+  station: {
+    id: string;
+    name: string;
+    location: string;
+    status: string;
+    ipAddress: string;
+    printerName: string;
+    cashDrawer: string;
+  };
+  loginTime: string;
+  rememberMe: boolean;
+}
+
 interface NavigationProps {
-  user: any
-  currentPage: string
-  onPageChange: (page: string) => void
+  user: User;
+  currentPage: string;
+  onPageChange: (page: string) => void;
 }
 
 export default function Navigation({ user, currentPage, onPageChange }: NavigationProps) {

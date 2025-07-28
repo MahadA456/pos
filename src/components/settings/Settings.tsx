@@ -2,8 +2,32 @@
 
 import { useState } from "react"
 
+interface User {
+  id: number;
+  firstName: string;
+  lastName: string;
+  username: string;
+  password: string;
+  email: string;
+  role: string;
+  status: string;
+  assignedStations: string[];
+  createdAt: string;
+  station: {
+    id: string;
+    name: string;
+    location: string;
+    status: string;
+    ipAddress: string;
+    printerName: string;
+    cashDrawer: string;
+  };
+  loginTime: string;
+  rememberMe: boolean;
+}
+
 interface SettingsProps {
-  user: any
+  user: User;
 }
 
 export default function Settings({ user }: SettingsProps) {
@@ -36,14 +60,14 @@ export default function Settings({ user }: SettingsProps) {
 
   const [successMessage, setSuccessMessage] = useState("")
 
-  const handleUserPreferenceChange = (key, value) => {
+  const handleUserPreferenceChange = (key: string, value: string | boolean) => {
     setUserPreferences((prev) => ({
       ...prev,
       [key]: value,
     }))
   }
 
-  const handleStoreInfoChange = (e) => {
+  const handleStoreInfoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setStoreInfo((prev) => ({
       ...prev,
@@ -51,7 +75,7 @@ export default function Settings({ user }: SettingsProps) {
     }))
   }
 
-  const handleSystemSettingChange = (e) => {
+  const handleSystemSettingChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setSystemSettings((prev) => ({
       ...prev,

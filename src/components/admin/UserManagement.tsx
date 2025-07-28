@@ -37,7 +37,7 @@ export default function UserManagement({ user }: UserManagementProps) {
         <div className="text-center py-12">
           <div className="text-6xl mb-4">🚫</div>
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Access Denied</h2>
-          <p className="text-gray-600">You don't have permission to access user management.</p>
+          <p className="text-gray-600">You don&apos;t have permission to access user management.</p>
         </div>
       </div>
     )

@@ -1,31 +1,59 @@
 "use client"
 
-import { useState } from "react"
+import { useState, ChangeEvent, FormEvent } from "react"
 import { mockStations } from "@/data/mockData"
 
+interface User {
+  id: number;
+  firstName: string;
+  lastName: string;
+  username: string;
+  password: string;
+  email: string;
+  role: string;
+  status: string;
+  assignedStations: string[];
+  createdAt: string;
+}
+
+interface FormData extends User {
+  confirmPassword: string;
+}
+
+interface FormErrors {
+  firstName?: string;
+  lastName?: string;
+  username?: string;
+  email?: string;
+  password?: string;
+  confirmPassword?: string;
+  role?: string;
+  assignedStations?: string;
+}
+
 interface EditUserModalProps {
-  user: any
-  onClose: () => void
-  onSave: (user: any) => void
+  user: User;
+  onClose: () => void;
+  onSave: (user: User) => void;
 }
 
 export default function EditUserModal({ user, onClose, onSave }: EditUserModalProps) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     ...user,
     password: "",
     confirmPassword: "",
   })
-  const [errors, setErrors] = useState({})
+  const [errors, setErrors] = useState<FormErrors>({})
 
   const roles = ["Super Admin", "Store Manager", "Cashier"]
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }))
-    if (errors[name]) {
+    if (errors[name as keyof FormErrors]) {
       setErrors((prev) => ({
         ...prev,
         [name]: "",
@@ -33,7 +61,7 @@ export default function EditUserModal({ user, onClose, onSave }: EditUserModalPr
     }
   }
 
-  const handleStationChange = (stationId) => {
+  const handleStationChange = (stationId: string) => {
     setFormData((prev) => ({
       ...prev,
       assignedStations: prev.assignedStations.includes(stationId)
@@ -43,7 +71,7 @@ export default function EditUserModal({ user, onClose, onSave }: EditUserModalPr
   }
 
   const validateForm = () => {
-    const newErrors = {}
+    const newErrors: FormErrors = {}
 
     if (!formData.firstName.trim()) newErrors.firstName = "First name is required"
     if (!formData.lastName.trim()) newErrors.lastName = "Last name is required"
@@ -60,13 +88,16 @@ export default function EditUserModal({ user, onClose, onSave }: EditUserModalPr
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (validateForm()) {
-      const updatedUser = { ...formData }
-      if (!updatedUser.password) {
-        delete updatedUser.password
-        delete updatedUser.confirmPassword
+      let updatedUser: User;
+      if (!formData.password) {
+        const { password, confirmPassword, ...userWithoutPassword } = formData;
+        updatedUser = userWithoutPassword;
+      } else {
+        const { confirmPassword, ...userWithPassword } = formData;
+        updatedUser = userWithPassword;
       }
       onSave(updatedUser)
     }

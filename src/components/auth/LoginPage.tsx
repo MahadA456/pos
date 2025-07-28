@@ -5,8 +5,32 @@ import type React from "react"
 import { useState } from "react"
 import { mockUsers, mockStations } from "@/data/mockData"
 
+interface User {
+  id: number;
+  firstName: string;
+  lastName: string;
+  username: string;
+  password: string;
+  email: string;
+  role: string;
+  status: string;
+  assignedStations: string[];
+  createdAt: string;
+  station: {
+    id: string;
+    name: string;
+    location: string;
+    status: string;
+    ipAddress: string;
+    printerName: string;
+    cashDrawer: string;
+  };
+  loginTime: string;
+  rememberMe: boolean;
+}
+
 interface LoginPageProps {
-  onLogin: (user: any) => void
+  onLogin: (user: User) => void;
 }
 
 export default function LoginPage({ onLogin }: LoginPageProps) {
