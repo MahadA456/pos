@@ -2,21 +2,21 @@
 
 import type React from "react"
 
-import { useState } from "react"
-import { mockUsers, mockStations } from "@/data/mockData"
+import { useState, useEffect } from "react"
+import { apiService, SigninRequest } from "@/services/api"
+import { authManager } from "@/utils/auth"
+import SignupPage from "./SignupPage"
 
 interface User {
   id: number;
   firstName: string;
   lastName: string;
   username: string;
-  password: string;
   email: string;
   role: string;
   status: string;
-  assignedStations: string[];
-  createdAt: string;
-  station: {
+  assignedStations: unknown[];
+  station?: {
     id: string;
     name: string;
     location: string;
@@ -25,8 +25,7 @@ interface User {
     printerName: string;
     cashDrawer: string;
   };
-  loginTime: string;
-  rememberMe: boolean;
+  loginTime?: string;
 }
 
 interface LoginPageProps {
@@ -34,14 +33,15 @@ interface LoginPageProps {
 }
 
 export default function LoginPage({ onLogin }: LoginPageProps) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<SigninRequest>({
     username: "",
     password: "",
-    station: "",
+    stationId: "",
   })
   const [rememberMe, setRememberMe] = useState(false)
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+  const [showSignup, setShowSignup] = useState(false)
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -58,8 +58,8 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
     setError("")
 
     // Validation
-    if (!formData.username || !formData.password || !formData.station) {
-      setError("All fields are required")
+    if (!formData.username || !formData.password) {
+      setError("Username and password are required")
       setLoading(false)
       return
     }
@@ -70,32 +70,22 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
       return
     }
 
-    // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    try {
+      const response = await apiService.signin(formData)
 
-    // Find user
-    const user = mockUsers.find((u) => u.username === formData.username && u.password === formData.password)
-
-    if (!user) {
-      setError("Invalid username or password")
+      if (response.success && response.data) {
+        // Save authentication data
+        authManager.setAuth(response.data)
+        
+        // Call the onLogin callback with the user data
+        onLogin(response.data.user)
+      } else {
+        setError(response.error || "Invalid username or password")
+      }
+    } catch (err) {
+      setError("An unexpected error occurred. Please try again.")
+    } finally {
       setLoading(false)
-      return
-    }
-
-    // Check if user is assigned to this station
-    const station = mockStations.find((s) => s.id === formData.station)
-    if (!station) {
-      setError("Invalid station selected")
-      setLoading(false)
-      return
-    }
-
-    // Create session data
-    const sessionData = {
-      ...user,
-      station: station,
-      loginTime: new Date().toISOString(),
-      rememberMe,
     }
 
     if (rememberMe) {
@@ -103,60 +93,52 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
         "oneStepRememberMe",
         JSON.stringify({
           username: formData.username,
-          station: formData.station,
         }),
       )
     }
-
-    onLogin(sessionData)
-    setLoading(false)
   }
 
   // Load remembered credentials
-  useState(() => {
+  useEffect(() => {
     const remembered = localStorage.getItem("oneStepRememberMe")
     if (remembered) {
       const data = JSON.parse(remembered)
       setFormData((prev) => ({
         ...prev,
         username: data.username,
-        station: data.station,
       }))
       setRememberMe(true)
     }
-  })
+  }, [])
+
+  if (showSignup) {
+    return (
+      <SignupPage 
+        onSwitchToLogin={() => setShowSignup(false)}
+        onSignupSuccess={() => {
+          // After successful signup, get the user and call onLogin
+          const user = authManager.getCurrentUser();
+          if (user) {
+            onLogin(user);
+          }
+        }}
+      />
+    );
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-xl shadow-2xl">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <div className="max-w-md w-full space-y-8 p-8 bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl border border-white/20">
         <div className="text-center">
+          <div className="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-gradient-to-r from-purple-600 to-blue-600 mb-4">
+            <span className="text-2xl text-white">🏪</span>
+          </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">OneStep POS</h1>
           <p className="text-gray-600">Sign in to your account</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">{error}</div>}
-
-          <div>
-            <label htmlFor="station" className="block text-sm font-medium text-gray-700 mb-2">
-              Station
-            </label>
-            <select
-              id="station"
-              name="station"
-              value={formData.station}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              required
-            >
-              <option value="">Select Station</option>
-              {mockStations.map((station) => (
-                <option key={station.id} value={station.id}>
-                  {station.name} - {station.location}
-                </option>
-              ))}
-            </select>
-          </div>
+          {error && <div className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-xl shadow-sm">{error}</div>}
 
           <div>
             <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
@@ -168,7 +150,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
               type="text"
               value={formData.username}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
               placeholder="Enter your username"
               required
             />
@@ -184,7 +166,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
               type="password"
               value={formData.password}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
               placeholder="Enter your password"
               required
             />
@@ -197,7 +179,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
               type="checkbox"
               checked={rememberMe}
               onChange={(e) => setRememberMe(e.target.checked)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
             />
             <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
               Remember me
@@ -207,7 +189,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-lg text-sm font-medium text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-[1.02]"
           >
             {loading ? (
               <div className="flex items-center">
@@ -219,24 +201,36 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
             )}
           </button>
 
-          <div className="text-center">
-            <a href="#" className="text-sm text-blue-600 hover:text-blue-500">
-              Forgot your password?
-            </a>
+          <div className="text-center space-y-2">
+            <button
+              type="button"
+              onClick={() => setShowSignup(true)}
+              className="text-sm text-purple-600 hover:text-purple-700 font-medium transition-colors duration-200"
+            >
+              Don&apos;t have an account? Sign up
+            </button>
+            <div>
+              <a href="#" className="text-sm text-purple-600 hover:text-purple-700 font-medium transition-colors duration-200">
+                Forgot your password?
+              </a>
+            </div>
           </div>
         </form>
 
-        <div className="mt-8 p-4 bg-gray-50 rounded-lg">
-          <p className="text-xs text-gray-600 mb-2">Demo Credentials:</p>
+        <div className="mt-8 p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl border border-purple-100">
+          <p className="text-xs text-gray-700 mb-2 font-medium">Demo Credentials:</p>
           <div className="text-xs space-y-1">
-            <div>
-              <strong>Admin:</strong> admin / admin123
+            <div className="flex justify-between">
+              <span className="font-medium text-purple-700">Admin:</span>
+              <span className="text-gray-600">admin / admin123</span>
             </div>
-            <div>
-              <strong>Manager:</strong> manager / manager123
+            <div className="flex justify-between">
+              <span className="font-medium text-purple-700">Manager:</span>
+              <span className="text-gray-600">manager / manager123</span>
             </div>
-            <div>
-              <strong>Cashier:</strong> cashier / cashier123
+            <div className="flex justify-between">
+              <span className="font-medium text-purple-700">Cashier:</span>
+              <span className="text-gray-600">cashier / cashier123</span>
             </div>
           </div>
         </div>

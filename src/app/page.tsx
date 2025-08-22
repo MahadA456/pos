@@ -6,34 +6,40 @@ import Dashboard from "@/components/dashboard/Dashboard"
 import UserManagement from "@/components/admin/UserManagement"
 import Settings from "@/components/settings/Settings"
 import Layout from "@/components/layout/Layout"
+import { authManager } from "@/utils/auth"
+import { User } from "@/utils/auth"
 
 export default function Home() {
-  const [currentUser, setCurrentUser] = useState(null)
+  const [currentUser, setCurrentUser] = useState<User | null>(null)
   const [currentPage, setCurrentPage] = useState("dashboard")
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Check for existing session
-    const savedUser = localStorage.getItem("oneStepUser")
-    if (savedUser) {
-      setCurrentUser(JSON.parse(savedUser))
+    // Check for existing JWT session
+    if (authManager.isAuthenticated() && !authManager.isTokenExpired()) {
+      const user = authManager.getCurrentUser()
+      if (user) {
+        setCurrentUser(user)
+      }
+    } else {
+      // Clear expired session
+      authManager.logout()
     }
     setLoading(false)
   }, [])
 
-  const handleLogin = (user) => {
+  const handleLogin = (user: User) => {
     setCurrentUser(user)
-    localStorage.setItem("oneStepUser", JSON.stringify(user))
     setCurrentPage("dashboard")
   }
 
   const handleLogout = () => {
     setCurrentUser(null)
-    localStorage.removeItem("oneStepUser")
+    authManager.logout()
     setCurrentPage("dashboard")
   }
 
-  const handlePageChange = (page) => {
+  const handlePageChange = (page: string) => {
     setCurrentPage(page)
   }
 

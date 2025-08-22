@@ -87,7 +87,7 @@ export default function Navigation({ user, currentPage, onPageChange }: Navigati
   const filteredItems = menuItems.filter((item) => item.roles.includes(user.role))
 
   return (
-    <nav className="w-64 bg-white shadow-sm border-r border-gray-200 min-h-screen">
+    <nav className="w-64 bg-gradient-to-b from-white to-gray-50 shadow-lg border-r border-gray-200 min-h-screen">
       <div className="p-4">
         <ul className="space-y-2">
           {filteredItems.map((item) => (
@@ -95,12 +95,12 @@ export default function Navigation({ user, currentPage, onPageChange }: Navigati
               <button
                 onClick={() => !item.disabled && onPageChange(item.id)}
                 disabled={item.disabled}
-                className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors ${
+                className={`w-full flex items-center px-4 py-3 text-left rounded-xl transition-all duration-200 ${
                   currentPage === item.id
-                    ? "bg-blue-50 text-blue-700 border-l-4 border-blue-700"
+                    ? "bg-gradient-to-r from-purple-50 to-blue-50 text-purple-700 border-l-4 border-purple-600 shadow-sm"
                     : item.disabled
                       ? "text-gray-400 cursor-not-allowed"
-                      : "text-gray-700 hover:bg-gray-50"
+                      : "text-gray-700 hover:bg-gradient-to-r hover:from-purple-50/50 hover:to-blue-50/50 hover:text-purple-600"
                 }`}
               >
                 <span className="text-lg mr-3">{item.icon}</span>
