@@ -111,9 +111,7 @@ export default function SignupPage({ onSwitchToLogin, onSignupSuccess }: SignupP
       const response = await apiService.signup(formData)
 
       if (response.success && response.data) {
-        // Save authentication data
-        authManager.setAuth(response.data)
-        setSuccess("Account created successfully! Redirecting...")
+        setSuccess("Account created successfully! Redirecting to login...")
         
         // Redirect after a short delay
         setTimeout(() => {

@@ -4,29 +4,8 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import { apiService, SigninRequest } from "@/services/api"
-import { authManager } from "@/utils/auth"
+import { authManager, User } from "@/utils/auth"
 import SignupPage from "./SignupPage"
-
-interface User {
-  id: number;
-  firstName: string;
-  lastName: string;
-  username: string;
-  email: string;
-  role: string;
-  status: string;
-  assignedStations: unknown[];
-  station?: {
-    id: string;
-    name: string;
-    location: string;
-    status: string;
-    ipAddress: string;
-    printerName: string;
-    cashDrawer: string;
-  };
-  loginTime?: string;
-}
 
 interface LoginPageProps {
   onLogin: (user: User) => void;
@@ -74,11 +53,25 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
       const response = await apiService.signin(formData)
 
       if (response.success && response.data) {
+        // Transform the response to match our expected format
+        const userData = {
+          id: response.data.id || 0,
+          firstName: response.data.firstName || response.data.username,
+          lastName: response.data.lastName || '',
+          username: response.data.username,
+          email: response.data.email || `${response.data.username}@example.com`,
+          role: response.data.role,
+          status: response.data.status || 'Active',
+          assignedStations: response.data.assignedStationIds || [],
+          station: response.data.station,
+          loginTime: new Date().toISOString()
+        }
+        
         // Save authentication data
         authManager.setAuth(response.data)
         
         // Call the onLogin callback with the user data
-        onLogin(response.data.user)
+        onLogin(userData)
       } else {
         setError(response.error || "Invalid username or password")
       }
@@ -116,10 +109,18 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
       <SignupPage 
         onSwitchToLogin={() => setShowSignup(false)}
         onSignupSuccess={() => {
-          // After successful signup, get the user and call onLogin
-          const user = authManager.getCurrentUser();
-          if (user) {
-            onLogin(user);
+          // After successful signup, switch back to login page
+          setShowSignup(false);
+          // Clear any existing error messages
+          setError("");
+          // Show success message
+          const successElement = document.getElementById('signup-success');
+          if (successElement) {
+            successElement.style.display = 'block';
+            // Hide success message after 5 seconds
+            setTimeout(() => {
+              successElement.style.display = 'none';
+            }, 5000);
           }
         }}
       />
@@ -139,6 +140,11 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {error && <div className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-xl shadow-sm">{error}</div>}
+          
+          {/* Success message for new signups */}
+          <div className="bg-green-50 border border-green-300 text-green-700 px-4 py-3 rounded-xl shadow-sm" style={{ display: 'none' }} id="signup-success">
+            Account created successfully! Please sign in with your credentials.
+          </div>
 
           <div>
             <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
@@ -217,24 +223,12 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
           </div>
         </form>
 
-        <div className="mt-8 p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl border border-purple-100">
-          <p className="text-xs text-gray-700 mb-2 font-medium">Demo Credentials:</p>
-          <div className="text-xs space-y-1">
-            <div className="flex justify-between">
-              <span className="font-medium text-purple-700">Admin:</span>
-              <span className="text-gray-600">admin / admin123</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="font-medium text-purple-700">Manager:</span>
-              <span className="text-gray-600">manager / manager123</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="font-medium text-purple-700">Cashier:</span>
-              <span className="text-gray-600">cashier / cashier123</span>
+      
+            
             </div>
           </div>
-        </div>
-      </div>
-    </div>
+       
+
+
   )
 }

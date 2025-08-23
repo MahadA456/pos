@@ -50,9 +50,9 @@ export default function Header({ user, onLogout }: HeaderProps) {
             <div className="text-sm text-gray-600 bg-white/80 px-3 py-1 rounded-lg shadow-sm">{currentTime}</div>
             <div className="flex items-center space-x-2">
               <div className="text-sm bg-white/80 px-3 py-2 rounded-lg shadow-sm">
-                <div className="font-medium text-gray-900">
-                  {user.firstName} {user.lastName}
-                </div>
+                                 <div className="font-medium text-gray-900">
+                   {user.firstName || user.username} {user.lastName}
+                 </div>
                 <div className="text-purple-600 font-medium">{user.role}</div>
               </div>
               <button

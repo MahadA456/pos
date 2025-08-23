@@ -1,15 +1,6 @@
 "use client"
 import React from "react";
-
-interface User {
-  firstName: string;
-  lastName: string;
-  role: string;
-  station: {
-    name: string;
-  };
-  loginTime: string;
-}
+import { User } from "@/utils/auth";
 
 interface DashboardProps {
   user: User;
@@ -101,7 +92,7 @@ export default function Dashboard({ user }: DashboardProps) {
       <div className="bg-gradient-to-r from-white to-gray-50 rounded-xl shadow-lg p-6 border border-gray-200">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Welcome back, {user.firstName}!</h1>
+                         <h1 className="text-2xl font-bold text-gray-900">Welcome back, {user.firstName || user.username}!</h1>
             <p className="text-gray-600 mt-1">{currentDate}</p>
             <p className="text-sm text-gray-500 mt-1">
               Station: {user.station?.name || 'Not assigned'} • Role: {user.role}
@@ -155,9 +146,9 @@ export default function Dashboard({ user }: DashboardProps) {
             <div className="text-lg">🔐</div>
             <div>
               <p className="text-sm font-medium">User logged in</p>
-              <p className="text-xs text-gray-500">
-                {user.firstName} {user.lastName} • {new Date(user.loginTime || Date.now()).toLocaleString()}
-              </p>
+                             <p className="text-xs text-gray-500">
+                 {user.firstName || user.username} {user.lastName} • {new Date(user.loginTime || Date.now()).toLocaleString()}
+               </p>
             </div>
           </div>
           <div className="flex items-center space-x-3 p-3 bg-white/80 rounded-xl shadow-sm">

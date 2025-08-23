@@ -28,10 +28,22 @@ class AuthManager {
   // Save authentication data
   setAuth(authResponse: AuthResponse): void {
     localStorage.setItem(this.TOKEN_KEY, authResponse.token);
-    localStorage.setItem(this.USER_KEY, JSON.stringify({
-      ...authResponse.user,
+    
+    // Transform the response to match our expected user format
+    const userData = {
+      id: authResponse.id || 0,
+      firstName: authResponse.firstName || authResponse.username,
+      lastName: authResponse.lastName || '',
+      username: authResponse.username,
+      email: authResponse.email || `${authResponse.username}@example.com`,
+      role: authResponse.role,
+      status: authResponse.status || 'Active',
+      assignedStations: authResponse.assignedStationIds || [],
+      station: authResponse.station,
       loginTime: new Date().toISOString()
-    }));
+    };
+    
+    localStorage.setItem(this.USER_KEY, JSON.stringify(userData));
   }
 
   // Get current user

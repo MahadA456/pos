@@ -26,24 +26,24 @@ export interface SigninRequest {
 
 export interface AuthResponse {
   token: string;
-  user: {
-    id: number;
-    firstName: string;
-    lastName: string;
-    username: string;
-    email: string;
-    role: string;
+  type?: string | null;
+  username: string;
+  role: string;
+  assignedStationIds: string[];
+  // Optional fields that might be present
+  id?: number;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  status?: string;
+  station?: {
+    id: string;
+    name: string;
+    location: string;
     status: string;
-    assignedStations: unknown[];
-    station?: {
-      id: string;
-      name: string;
-      location: string;
-      status: string;
-      ipAddress: string;
-      printerName: string;
-      cashDrawer: string;
-    };
+    ipAddress: string;
+    printerName: string;
+    cashDrawer: string;
   };
 }
 
@@ -167,8 +167,8 @@ class ApiService {
   }
 
   // Get current user profile
-  async getCurrentUser(): Promise<ApiResponse<AuthResponse['user']>> {
-    return this.authenticatedRequest<AuthResponse['user']>('/users/me');
+  async getCurrentUser(): Promise<ApiResponse<AuthResponse>> {
+    return this.authenticatedRequest<AuthResponse>('/users/me');
   }
 
   // Generic authenticated request method
