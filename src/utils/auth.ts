@@ -8,7 +8,11 @@ export interface User {
   email: string;
   role: string;
   status: string;
-  assignedStations: any[];
+  assignedStations: string[]; // Changed from any[] to string[] since it appears to store station IDs
+  // Optional fields that might be present in different contexts
+  password?: string;
+  createdAt?: string;
+  rememberMe?: boolean;
   station?: {
     id: string;
     name: string;
@@ -40,7 +44,10 @@ class AuthManager {
       status: authResponse.status || 'Active',
       assignedStations: authResponse.assignedStationIds || [],
       station: authResponse.station,
-      loginTime: new Date().toISOString()
+      loginTime: new Date().toISOString(),
+      // Optional fields with defaults
+      createdAt: new Date().toISOString(),
+      rememberMe: false
     };
     
     localStorage.setItem(this.USER_KEY, JSON.stringify(userData));

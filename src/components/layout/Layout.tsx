@@ -1,33 +1,10 @@
 "use client"
 
 import type React from "react"
+import { User } from "@/utils/auth"
 
 import Header from "./Header"
 import Navigation from "./Navigation"
-
-interface User {
-  id: number;
-  firstName: string;
-  lastName: string;
-  username: string;
-  password: string;
-  email: string;
-  role: string;
-  status: string;
-  assignedStations: string[];
-  createdAt: string;
-  station: {
-    id: string;
-    name: string;
-    location: string;
-    status: string;
-    ipAddress: string;
-    printerName: string;
-    cashDrawer: string;
-  };
-  loginTime: string;
-  rememberMe: boolean;
-}
 
 interface LayoutProps {
   children: React.ReactNode;

@@ -1,28 +1,5 @@
 "use client"
-
-interface User {
-  id: number;
-  firstName: string;
-  lastName: string;
-  username: string;
-  password: string;
-  email: string;
-  role: string;
-  status: string;
-  assignedStations: string[];
-  createdAt: string;
-  station: {
-    id: string;
-    name: string;
-    location: string;
-    status: string;
-    ipAddress: string;
-    printerName: string;
-    cashDrawer: string;
-  };
-  loginTime: string;
-  rememberMe: boolean;
-}
+import { User } from "@/utils/auth";
 
 interface NavigationProps {
   user: User;
@@ -74,6 +51,12 @@ export default function Navigation({ user, currentPage, onPageChange }: Navigati
       id: "users",
       name: "User Management",
       icon: "👤",
+      roles: ["Super Admin"],
+    },
+    {
+      id: "stations",
+      name: "Station Management",
+      icon: "💻",
       roles: ["Super Admin"],
     },
     {
