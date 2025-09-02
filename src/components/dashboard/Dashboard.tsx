@@ -17,39 +17,39 @@ export default function Dashboard({ user }: DashboardProps) {
   const statsCards = [
     {
       title: "Today's Sales",
-      value: "$2,847.50",
+      value: "$0.00",
       icon: "💰",
       color: "bg-gradient-to-br from-green-50 to-emerald-50 border-green-200",
       textColor: "text-green-700",
-      change: "+18.5%",
-      changeType: "positive"
+      change: "No data",
+      changeType: "neutral"
     },
     {
       title: "Monthly Sales",
-      value: "$45,230.75",
+      value: "$0.00",
       icon: "📊",
       color: "bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-200",
       textColor: "text-blue-700",
-      change: "+12.3%",
-      changeType: "positive"
+      change: "No data",
+      changeType: "neutral"
     },
     {
       title: "Active Orders",
-      value: "23",
+      value: "0",
       icon: "📦",
       color: "bg-gradient-to-br from-purple-50 to-violet-50 border-purple-200",
       textColor: "text-purple-700",
-      change: "+5",
-      changeType: "positive"
+      change: "No data",
+      changeType: "neutral"
     },
     {
       title: "Low Stock Items",
-      value: "8",
+      value: "0",
       icon: "⚠️",
       color: "bg-gradient-to-br from-orange-50 to-amber-50 border-orange-200",
       textColor: "text-orange-700",
-      change: "-2",
-      changeType: "negative"
+      change: "No data",
+      changeType: "neutral"
     },
   ]
 
@@ -173,25 +173,11 @@ export default function Dashboard({ user }: DashboardProps) {
               <p className="text-xs text-gray-500">Connected to {user.station?.name || 'Not assigned'}</p>
             </div>
           </div>
-          <div className="flex items-center space-x-3 p-3 bg-white/80 rounded-xl shadow-sm">
-            <div className="text-lg">📊</div>
-            <div>
-              <p className="text-sm font-medium">Daily report generated</p>
-              <p className="text-xs text-gray-500">Sales summary for {new Date().toLocaleDateString()}</p>
-            </div>
-          </div>
-          <div className="flex items-center space-x-3 p-3 bg-white/80 rounded-xl shadow-sm">
-            <div className="text-lg">⚠️</div>
-            <div>
-              <p className="text-sm font-medium">Low stock alert</p>
-              <p className="text-xs text-gray-500">8 items need restocking</p>
-            </div>
-          </div>
-          <div className="flex items-center space-x-3 p-3 bg-white/80 rounded-xl shadow-sm">
-            <div className="text-lg">👤</div>
-            <div>
-              <p className="text-sm font-medium">New user registered</p>
-              <p className="text-xs text-gray-500">Sarah Jones joined as Cashier</p>
+          <div className="flex items-center justify-center space-x-3 p-8 bg-white/80 rounded-xl shadow-sm">
+            <div className="text-center">
+              <div className="text-4xl text-gray-400 mb-2">📋</div>
+              <p className="text-sm text-gray-500">No recent activity</p>
+              <p className="text-xs text-gray-400">Activity will appear here as you use the system</p>
             </div>
           </div>
         </div>
