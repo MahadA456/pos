@@ -81,7 +81,7 @@ export interface LoginHistory {
   ipAddress: string;
   userAgent?: string;
   sessionDuration?: number;
-  status: string; // 'active', 'completed', 'expired', 'terminated'
+  status?: string; // Made optional since it might be undefined from API
   stationId?: string;
   stationName?: string;
 }
@@ -207,16 +207,22 @@ class ApiService {
 
   // Get current user profile
   async getCurrentUser(): Promise<ApiResponse<AuthResponse>> {
-    return this.authenticatedRequest<AuthResponse>('/users/me');
+    return this.authenticatedRequest<AuthResponse>('/users/me', {
+      method: 'GET'
+    });
   }
 
   // Store Management
   async getStores(): Promise<ApiResponse<Store[]>> {
-    return this.authenticatedRequest<Store[]>('/admin/stores');
+    return this.authenticatedRequest<Store[]>('/admin/stores', {
+      method: 'GET'
+    });
   }
 
   async getStore(id: string): Promise<ApiResponse<Store>> {
-    return this.authenticatedRequest<Store>(`/admin/stores/${id}`);
+    return this.authenticatedRequest<Store>(`/admin/stores/${id}`, {
+      method: 'GET'
+    });
   }
 
   async createStore(store: Omit<Store, 'id'>): Promise<ApiResponse<Store>> {
@@ -241,11 +247,15 @@ class ApiService {
 
   // Station Management
   async getStations(): Promise<ApiResponse<Station[]>> {
-    return this.authenticatedRequest<Station[]>('/admin/stations');
+    return this.authenticatedRequest<Station[]>('/admin/stations', {
+      method: 'GET'
+    });
   }
 
   async getStation(id: string): Promise<ApiResponse<Station>> {
-    return this.authenticatedRequest<Station>(`/admin/stations/${id}`);
+    return this.authenticatedRequest<Station>(`/admin/stations/${id}`, {
+      method: 'GET'
+    });
   }
 
   async createStation(station: Omit<Station, 'id'>): Promise<ApiResponse<Station>> {
@@ -270,7 +280,44 @@ class ApiService {
 
   // Login History
   async getLoginHistory(): Promise<ApiResponse<LoginHistory[]>> {
-    return this.authenticatedRequest<LoginHistory[]>('/admin/loginHistory');
+    console.log('🔍 Making GET request to:', `${API_BASE_URL}/admin/loginHistory`);
+    console.log('🔑 Auth headers:', this.getAuthHeaders());
+    
+    const result = await this.authenticatedRequest<LoginHistory[]>('/admin/loginHistory', {
+      method: 'GET'
+    });
+    
+    console.log('📝 API Response:', result);
+    return result;
+  }
+
+  // Test API connection
+  async testConnection(): Promise<ApiResponse<any>> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/health`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (response.ok) {
+        return {
+          success: true,
+          data: { status: 'connected', url: API_BASE_URL }
+        };
+      } else {
+        return {
+          success: false,
+          error: `API not reachable: ${response.status}`
+        };
+      }
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Connection failed'
+      };
+    }
   }
 
   // Generic authenticated request method
@@ -279,8 +326,15 @@ class ApiService {
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
     try {
+      const defaultOptions: RequestInit = {
+        method: 'GET', // Default method
+        mode: 'cors', // Explicitly set CORS mode
+        credentials: 'omit', // Don't send credentials unless needed
+        ...options
+      };
+
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-        ...options,
+        ...defaultOptions,
         headers: {
           ...this.getAuthHeaders(),
           ...options.headers,

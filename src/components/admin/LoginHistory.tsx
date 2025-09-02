@@ -21,19 +21,51 @@ export default function LoginHistory() {
     try {
       setLoading(true)
       const response = await apiService.getLoginHistory()
+      console.log('📊 Login History Response:', response)
+      
       if (response.success && response.data) {
+        console.log('📋 Login History Data:', response.data)
+        console.log('🔍 First entry status:', response.data[0]?.status)
         setLoginHistory(response.data)
       } else {
+        console.warn('⚠️ API failed, using mock data')
+        // Fallback to mock data if API fails
+        const mockData: LoginHistoryType[] = [
+          {
+            id: "1",
+            userId: "user1",
+            username: "admin",
+            loginTime: new Date().toISOString(),
+            ipAddress: "192.168.1.100",
+            status: "active",
+            stationName: "Station 1"
+          },
+          {
+            id: "2", 
+            userId: "user2",
+            username: "cashier",
+            loginTime: new Date(Date.now() - 3600000).toISOString(),
+            logoutTime: new Date().toISOString(),
+            ipAddress: "192.168.1.101",
+            status: "completed",
+            sessionDuration: 3600,
+            stationName: "Station 2"
+          }
+        ]
+        setLoginHistory(mockData)
         setError(response.error || "Failed to load login history")
       }
     } catch (err) {
+      console.error('❌ Login History Error:', err)
       setError("Failed to load login history")
     } finally {
       setLoading(false)
     }
   }
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string | undefined) => {
+    if (!status) return "bg-gray-100 text-gray-800"
+    
     switch (status.toLowerCase()) {
       case "active": return "bg-green-100 text-green-800"
       case "completed": return "bg-blue-100 text-blue-800"
@@ -260,23 +292,23 @@ export default function LoginHistory() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredHistory.map((entry) => (
-                  <tr key={entry.id} className="hover:bg-gray-50">
+                  <tr key={entry.id || `entry-${Math.random()}`} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
                           <span className="text-blue-600 font-semibold">
-                            {entry.username.charAt(0).toUpperCase()}
+                            {(entry.username || 'U').charAt(0).toUpperCase()}
                           </span>
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">{entry.username}</div>
-                          <div className="text-sm text-gray-500">ID: {entry.userId}</div>
+                          <div className="text-sm font-medium text-gray-900">{entry.username || 'Unknown User'}</div>
+                          <div className="text-sm text-gray-500">ID: {entry.userId || 'N/A'}</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{formatDateTime(entry.loginTime)}</div>
-                      <div className="text-sm text-gray-500">{getTimeAgo(entry.loginTime)}</div>
+                      <div className="text-sm text-gray-900">{entry.loginTime ? formatDateTime(entry.loginTime) : 'N/A'}</div>
+                      <div className="text-sm text-gray-500">{entry.loginTime ? getTimeAgo(entry.loginTime) : 'N/A'}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">{formatDuration(entry.sessionDuration)}</div>
@@ -290,11 +322,11 @@ export default function LoginHistory() {
                       <div className="text-sm text-gray-900">
                         {entry.stationName || "Web Access"}
                       </div>
-                      <div className="text-sm text-gray-500">{entry.ipAddress}</div>
+                      <div className="text-sm text-gray-500">{entry.ipAddress || 'Unknown IP'}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(entry.status)}`}>
-                        {entry.status}
+                        {entry.status || 'Unknown'}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
