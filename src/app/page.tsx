@@ -6,7 +6,10 @@ import { authManager } from "@/utils/auth"
 import { User } from "@/utils/auth"
 import Dashboard from "@/components/dashboard/Dashboard"
 import UserManagement from "@/components/admin/UserManagement"
+import LoginHistory from "@/components/admin/LoginHistory"
 import StationManagement from "@/components/admin/StationManagement"
+import StoreManagement from "@/components/store/StoreManagement"
+import SystemStatus from "@/components/dashboard/SystemStatus"
 import Settings from "@/components/settings/Settings"
 import Layout from "@/components/layout/Layout"
 
@@ -57,8 +60,14 @@ export default function Home() {
           return <Dashboard user={currentUser} />
         case "users":
           return <UserManagement user={currentUser} />
+        case "loginHistory":
+          return <LoginHistory />
         case "stations":
-          return <StationManagement user={currentUser} />
+          return <StationManagement />
+        case "stores":
+          return <StoreManagement />
+        case "system":
+          return <SystemStatus />
         case "settings":
           return <Settings user={currentUser} />
         default:

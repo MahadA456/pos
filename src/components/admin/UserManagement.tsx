@@ -74,6 +74,45 @@ export default function UserManagement({ user }: UserManagementProps) {
       lastLogin: "2024-01-10 16:20:00",
       createdAt: "2024-01-04 12:00:00",
       permissions: ["sales"]
+    },
+    {
+      id: 5,
+      firstName: "David",
+      lastName: "Brown",
+      username: "david.brown",
+      email: "david.brown@onestep.com",
+      role: "CASHIER",
+      status: "active",
+      assignedStations: ["ST001"],
+      lastLogin: "2024-01-15 11:30:00",
+      createdAt: "2024-01-05 14:00:00",
+      permissions: ["sales"]
+    },
+    {
+      id: 6,
+      firstName: "Emily",
+      lastName: "Davis",
+      username: "emily.davis",
+      email: "emily.davis@onestep.com",
+      role: "STORE_MANAGER",
+      status: "active",
+      assignedStations: ["ST002", "ST003"],
+      lastLogin: "2024-01-15 10:15:00",
+      createdAt: "2024-01-06 16:30:00",
+      permissions: ["sales", "inventory", "reports", "users"]
+    },
+    {
+      id: 7,
+      firstName: "Robert",
+      lastName: "Miller",
+      username: "robert.miller",
+      email: "robert.miller@onestep.com",
+      role: "CASHIER",
+      status: "suspended",
+      assignedStations: [],
+      lastLogin: "2024-01-08 09:45:00",
+      createdAt: "2024-01-07 11:20:00",
+      permissions: ["sales"]
     }
   ])
 

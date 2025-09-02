@@ -17,31 +17,39 @@ export default function Dashboard({ user }: DashboardProps) {
   const statsCards = [
     {
       title: "Today's Sales",
-      value: "$1,234.56",
+      value: "$2,847.50",
       icon: "💰",
       color: "bg-gradient-to-br from-green-50 to-emerald-50 border-green-200",
       textColor: "text-green-700",
+      change: "+18.5%",
+      changeType: "positive"
     },
     {
-      title: "Items in Stock",
-      value: "1,456",
-      icon: "📦",
+      title: "Monthly Sales",
+      value: "$45,230.75",
+      icon: "📊",
       color: "bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-200",
       textColor: "text-blue-700",
+      change: "+12.3%",
+      changeType: "positive"
     },
     {
-      title: "Active Customers",
-      value: "234",
-      icon: "👥",
+      title: "Active Orders",
+      value: "23",
+      icon: "📦",
       color: "bg-gradient-to-br from-purple-50 to-violet-50 border-purple-200",
       textColor: "text-purple-700",
+      change: "+5",
+      changeType: "positive"
     },
     {
-      title: "Pending Orders",
-      value: "12",
-      icon: "📋",
+      title: "Low Stock Items",
+      value: "8",
+      icon: "⚠️",
       color: "bg-gradient-to-br from-orange-50 to-amber-50 border-orange-200",
       textColor: "text-orange-700",
+      change: "-2",
+      changeType: "negative"
     },
   ]
 
@@ -110,6 +118,13 @@ export default function Dashboard({ user }: DashboardProps) {
               <div>
                 <p className="text-sm font-medium text-gray-600">{card.title}</p>
                 <p className={`text-2xl font-bold ${card.textColor} mt-1`}>{card.value}</p>
+                {card.change && (
+                  <p className={`text-xs font-medium mt-1 ${
+                    card.changeType === "positive" ? "text-green-600" : "text-red-600"
+                  }`}>
+                    {card.change}
+                  </p>
+                )}
               </div>
               <div className="text-3xl">{card.icon}</div>
             </div>
@@ -146,9 +161,9 @@ export default function Dashboard({ user }: DashboardProps) {
             <div className="text-lg">🔐</div>
             <div>
               <p className="text-sm font-medium">User logged in</p>
-                             <p className="text-xs text-gray-500">
-                 {user.firstName || user.username} {user.lastName} • {new Date(user.loginTime || Date.now()).toLocaleString()}
-               </p>
+              <p className="text-xs text-gray-500">
+                {user.firstName || user.username} {user.lastName} • {new Date(user.loginTime || Date.now()).toLocaleString()}
+              </p>
             </div>
           </div>
           <div className="flex items-center space-x-3 p-3 bg-white/80 rounded-xl shadow-sm">
@@ -157,6 +172,58 @@ export default function Dashboard({ user }: DashboardProps) {
               <p className="text-sm font-medium">Station assigned</p>
               <p className="text-xs text-gray-500">Connected to {user.station?.name || 'Not assigned'}</p>
             </div>
+          </div>
+          <div className="flex items-center space-x-3 p-3 bg-white/80 rounded-xl shadow-sm">
+            <div className="text-lg">📊</div>
+            <div>
+              <p className="text-sm font-medium">Daily report generated</p>
+              <p className="text-xs text-gray-500">Sales summary for {new Date().toLocaleDateString()}</p>
+            </div>
+          </div>
+          <div className="flex items-center space-x-3 p-3 bg-white/80 rounded-xl shadow-sm">
+            <div className="text-lg">⚠️</div>
+            <div>
+              <p className="text-sm font-medium">Low stock alert</p>
+              <p className="text-xs text-gray-500">8 items need restocking</p>
+            </div>
+          </div>
+          <div className="flex items-center space-x-3 p-3 bg-white/80 rounded-xl shadow-sm">
+            <div className="text-lg">👤</div>
+            <div>
+              <p className="text-sm font-medium">New user registered</p>
+              <p className="text-xs text-gray-500">Sarah Jones joined as Cashier</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* System Status Summary */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-green-50 rounded-xl p-4 border border-green-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-semibold text-green-900">System Health</h3>
+              <p className="text-2xl font-bold text-green-700">98%</p>
+            </div>
+            <div className="text-2xl">✅</div>
+          </div>
+        </div>
+        <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-semibold text-blue-900">Active Stations</h3>
+              <p className="text-2xl font-bold text-blue-700">3/3</p>
+            </div>
+            <div className="text-2xl">💻</div>
+          </div>
+        </div>
+        <div className="bg-purple-50 rounded-xl p-4 border border-purple-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-semibold text-purple-900">Online Users</h3>
+              <p className="text-2xl font-bold text-purple-700">4</p>
+            </div>
+            <div className="text-2xl">👥</div>
           </div>
         </div>
       </div>

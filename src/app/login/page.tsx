@@ -188,9 +188,13 @@ export default function LoginPage() {
                 Don&apos;t have an account? Sign up
               </button>
               <div>
-                <a href="#" className="text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors">
+                <button
+                  type="button"
+                  onClick={() => router.push("/forgot-password")}
+                  className="text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors"
+                >
                   Forgot your password?
-                </a>
+                </button>
               </div>
             </div>
           </form>

@@ -6,7 +6,7 @@ interface NavigationProps {
   currentPage: string;
   onPageChange: (page: string) => void;
 }
-
+    
 export default function Navigation({ user, currentPage, onPageChange }: NavigationProps) {
   const menuItems = [
     {
@@ -54,9 +54,27 @@ export default function Navigation({ user, currentPage, onPageChange }: Navigati
       roles: ["Super Admin"],
     },
     {
+      id: "loginHistory",
+      name: "Login History",
+      icon: "📋",
+      roles: ["Super Admin"],
+    },
+    {
       id: "stations",
       name: "Station Management",
       icon: "💻",
+      roles: ["Super Admin"],
+    },
+    {
+      id: "stores",
+      name: "Store Management",
+      icon: "🏪",
+      roles: ["Super Admin", "Store Manager"],
+    },
+    {
+      id: "system",
+      name: "System Status",
+      icon: "📊",
       roles: ["Super Admin"],
     },
     {
@@ -67,7 +85,17 @@ export default function Navigation({ user, currentPage, onPageChange }: Navigati
     },
   ]
 
-  const filteredItems = menuItems.filter((item) => item.roles.includes(user.role))
+  // Normalize role names for comparison
+  const normalizeRole = (role: string) => {
+    const roleMap: Record<string, string> = {
+      'SUPER_ADMIN': 'Super Admin',
+      'STORE_MANAGER': 'Store Manager',
+      'CASHIER': 'Cashier'
+    }
+    return roleMap[role] || role
+  }
+
+  const filteredItems = menuItems.filter((item) => item.roles.includes(normalizeRole(user.role)))
 
   return (
     <nav className="w-64 bg-gradient-to-b from-white to-gray-50 shadow-lg border-r border-gray-200 min-h-screen">

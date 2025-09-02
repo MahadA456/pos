@@ -1,51 +1,56 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { apiService, Station } from "@/services/api"
+import { apiService, Store } from "@/services/api"
 import { authManager } from "@/utils/auth"
 
-interface StationFormData {
+interface StoreFormData {
   name: string;
-  location: string;
+  phone: string;
+  address: string;
+  city: string;
   status: string;
-  ipAddress: string;
-  printerName: string;
-  cashDrawer: string;
+  zipCode: string;
+  email: string;
+  website: string;
 }
 
-export default function StationManagement() {
-  const user = authManager.getCurrentUser()
-  const [stations, setStations] = useState<Station[]>([])
+export default function StoreManagement() {
+  const [stores, setStores] = useState<Store[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [showModal, setShowModal] = useState(false)
-  const [editingStation, setEditingStation] = useState<Station | null>(null)
+  const [editingStore, setEditingStore] = useState<Store | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("All")
-  const [formData, setFormData] = useState<StationFormData>({
+  const [formData, setFormData] = useState<StoreFormData>({
     name: "",
-    location: "",
+    phone: "",
+    address: "",
+    city: "",
     status: "Active",
-    ipAddress: "",
-    printerName: "",
-    cashDrawer: "",
+    zipCode: "",
+    email: "",
+    website: "",
   })
 
+  const user = authManager.getCurrentUser()
+
   useEffect(() => {
-    loadStations()
+    loadStores()
   }, [])
 
-  const loadStations = async () => {
+  const loadStores = async () => {
     try {
       setLoading(true)
-      const response = await apiService.getStations()
+      const response = await apiService.getStores()
       if (response.success && response.data) {
-        setStations(response.data)
+        setStores(response.data)
       } else {
-        setError(response.error || "Failed to load stations")
+        setError(response.error || "Failed to load stores")
       }
     } catch (err) {
-      setError("Failed to load stations")
+      setError("Failed to load stores")
     } finally {
       setLoading(false)
     }
@@ -58,54 +63,56 @@ export default function StationManagement() {
 
     try {
       let response
-      if (editingStation) {
-        response = await apiService.updateStation(editingStation.id!, formData)
+      if (editingStore) {
+        response = await apiService.updateStore(editingStore.id!, formData)
       } else {
-        response = await apiService.createStation(formData)
+        response = await apiService.createStore(formData)
       }
 
       if (response.success) {
-        await loadStations()
+        await loadStores()
         setShowModal(false)
         resetForm()
       } else {
-        setError(response.error || "Failed to save station")
+        setError(response.error || "Failed to save store")
       }
     } catch (err) {
-      setError("Failed to save station")
+      setError("Failed to save store")
     } finally {
       setLoading(false)
     }
   }
 
-  const handleEdit = (station: Station) => {
-    setEditingStation(station)
+  const handleEdit = (store: Store) => {
+    setEditingStore(store)
     setFormData({
-      name: station.name,
-      location: station.location,
-      status: station.status,
-      ipAddress: station.ipAddress,
-      printerName: station.printerName,
-      cashDrawer: station.cashDrawer,
+      name: store.name,
+      phone: store.phone,
+      address: store.address,
+      city: store.city,
+      status: store.status,
+      zipCode: store.zipCode,
+      email: store.email,
+      website: store.website,
     })
     setShowModal(true)
   }
 
-  const handleDelete = async (station: Station) => {
-    if (!window.confirm(`Are you sure you want to delete ${station.name}?`)) {
+  const handleDelete = async (store: Store) => {
+    if (!window.confirm(`Are you sure you want to delete ${store.name}?`)) {
       return
     }
 
     try {
       setLoading(true)
-      const response = await apiService.deleteStation(station.id!)
+      const response = await apiService.deleteStore(store.id!)
       if (response.success) {
-        await loadStations()
+        await loadStores()
       } else {
-        setError(response.error || "Failed to delete station")
+        setError(response.error || "Failed to delete store")
       }
     } catch (err) {
-      setError("Failed to delete station")
+      setError("Failed to delete store")
     } finally {
       setLoading(false)
     }
@@ -114,43 +121,36 @@ export default function StationManagement() {
   const resetForm = () => {
     setFormData({
       name: "",
-      location: "",
+      phone: "",
+      address: "",
+      city: "",
       status: "Active",
-      ipAddress: "",
-      printerName: "",
-      cashDrawer: "",
+      zipCode: "",
+      email: "",
+      website: "",
     })
-    setEditingStation(null)
+    setEditingStore(null)
   }
 
-  const filteredStations = stations.filter((station) => {
-    const matchesSearch = station.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         station.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         station.ipAddress.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesStatus = statusFilter === "All" || station.status === statusFilter
+  const filteredStores = stores.filter((store) => {
+    const matchesSearch = store.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         store.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         store.email.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesStatus = statusFilter === "All" || store.status === statusFilter
     return matchesSearch && matchesStatus
   })
 
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "active": return "bg-green-100 text-green-800"
-      case "inactive": return "bg-gray-100 text-gray-800"
-      case "maintenance": return "bg-yellow-100 text-yellow-800"
-      default: return "bg-gray-100 text-gray-800"
-    }
-  }
-
   const statusOptions = ["All", "Active", "Inactive", "Maintenance"]
 
-  if (!user || user.role !== "SUPER_ADMIN") {
+  if (!user || !["SUPER_ADMIN", "STORE_MANAGER"].includes(user.role)) {
     return (
       <div className="p-6 text-center">
-        <p className="text-gray-500">You don&apos;t have permission to manage stations.</p>
+        <p className="text-gray-500">You don&apos;t have permission to manage stores.</p>
       </div>
     )
   }
 
-  if (loading && stations.length === 0) {
+  if (loading && stores.length === 0) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -163,8 +163,8 @@ export default function StationManagement() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Station Management</h1>
-          <p className="text-gray-600">Manage your POS terminals and hardware configuration</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Store Management</h1>
+          <p className="text-gray-600">Manage your store locations and settings</p>
         </div>
 
         {/* Error Message */}
@@ -181,7 +181,7 @@ export default function StationManagement() {
               <div className="relative">
                 <input
                   type="text"
-                  placeholder="Search stations..."
+                  placeholder="Search stores..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
@@ -200,16 +200,18 @@ export default function StationManagement() {
                 ))}
               </select>
             </div>
-            <button
-              onClick={() => {
-                resetForm()
-                setShowModal(true)
-              }}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
-            >
-              <span>➕</span>
-              Add Station
-            </button>
+            {user.role === "SUPER_ADMIN" && (
+              <button
+                onClick={() => {
+                  resetForm()
+                  setShowModal(true)
+                }}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+              >
+                <span>➕</span>
+                Add Store
+              </button>
+            )}
           </div>
         </div>
 
@@ -218,11 +220,11 @@ export default function StationManagement() {
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="flex items-center">
               <div className="p-2 bg-blue-100 rounded-lg">
-                <span className="text-2xl">💻</span>
+                <span className="text-2xl">🏪</span>
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Stations</p>
-                <p className="text-2xl font-bold text-gray-900">{stations.length}</p>
+                <p className="text-sm font-medium text-gray-600">Total Stores</p>
+                <p className="text-2xl font-bold text-gray-900">{stores.length}</p>
               </div>
             </div>
           </div>
@@ -234,7 +236,7 @@ export default function StationManagement() {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Active</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {stations.filter(s => s.status.toLowerCase() === "active").length}
+                  {stores.filter(s => s.status === "Active").length}
                 </p>
               </div>
             </div>
@@ -247,7 +249,7 @@ export default function StationManagement() {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Maintenance</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {stations.filter(s => s.status.toLowerCase() === "maintenance").length}
+                  {stores.filter(s => s.status === "Maintenance").length}
                 </p>
               </div>
             </div>
@@ -260,27 +262,27 @@ export default function StationManagement() {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Inactive</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {stations.filter(s => s.status.toLowerCase() === "inactive").length}
+                  {stores.filter(s => s.status === "Inactive").length}
                 </p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Stations Table */}
+        {/* Stores Table */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Station Info
+                    Store Info
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Contact
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Location
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Hardware
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
@@ -291,55 +293,64 @@ export default function StationManagement() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredStations.map((station) => (
-                  <tr key={station.id} className="hover:bg-gray-50">
+                {filteredStores.map((store) => (
+                  <tr key={store.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
                           <span className="text-blue-600 font-semibold">
-                            {station.name.charAt(0).toUpperCase()}
+                            {store.name.charAt(0).toUpperCase()}
                           </span>
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">{station.name}</div>
-                          <div className="text-sm text-gray-500">IP: {station.ipAddress}</div>
+                          <div className="text-sm font-medium text-gray-900">{store.name}</div>
+                          <div className="text-sm text-gray-500">{store.website}</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{station.location}</div>
+                      <div className="text-sm text-gray-900">{store.email}</div>
+                      <div className="text-sm text-gray-500">{store.phone}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">Printer: {station.printerName}</div>
-                      <div className="text-sm text-gray-500">Drawer: {station.cashDrawer}</div>
+                      <div className="text-sm text-gray-900">{store.address}</div>
+                      <div className="text-sm text-gray-500">{store.city}, {store.zipCode}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(station.status)}`}>
-                        {station.status}
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                        store.status === "Active" 
+                          ? "bg-green-100 text-green-800"
+                          : store.status === "Maintenance"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : "bg-red-100 text-red-800"
+                      }`}>
+                        {store.status}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                       <button
-                        onClick={() => handleEdit(station)}
+                        onClick={() => handleEdit(store)}
                         className="text-blue-600 hover:text-blue-900 transition-colors"
                       >
                         Edit
                       </button>
-                      <button
-                        onClick={() => handleDelete(station)}
-                        className="text-red-600 hover:text-red-900 transition-colors"
-                      >
-                        Delete
-                      </button>
+                      {user.role === "SUPER_ADMIN" && (
+                        <button
+                          onClick={() => handleDelete(store)}
+                          className="text-red-600 hover:text-red-900 transition-colors"
+                        >
+                          Delete
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
             
-            {filteredStations.length === 0 && (
+            {filteredStores.length === 0 && (
               <div className="text-center py-12">
-                <p className="text-gray-500">No stations found</p>
+                <p className="text-gray-500">No stores found</p>
               </div>
             )}
           </div>
@@ -352,78 +363,99 @@ export default function StationManagement() {
           <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-4">
-                {editingStation ? "Edit Station" : "Add New Station"}
+                {editingStore ? "Edit Store" : "Add New Store"}
               </h2>
               
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Station Name
+                    Store Name
                   </label>
                   <input
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData({...formData, name: e.target.value})}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
-                    placeholder="Main Register"
                     required
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Location
+                    Phone
                   </label>
                   <input
-                    type="text"
-                    value={formData.location}
-                    onChange={(e) => setFormData({...formData, location: e.target.value})}
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
-                    placeholder="Front Counter"
                     required
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    IP Address
+                    Email
                   </label>
                   <input
-                    type="text"
-                    value={formData.ipAddress}
-                    onChange={(e) => setFormData({...formData, ipAddress: e.target.value})}
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({...formData, email: e.target.value})}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
-                    placeholder="192.168.1.101"
-                    pattern="^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$"
                     required
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Printer Name
+                    Address
                   </label>
                   <input
                     type="text"
-                    value={formData.printerName}
-                    onChange={(e) => setFormData({...formData, printerName: e.target.value})}
+                    value={formData.address}
+                    onChange={(e) => setFormData({...formData, address: e.target.value})}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
-                    placeholder="HP LaserJet Pro"
                     required
                   />
                 </div>
 
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      City
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.city}
+                      onChange={(e) => setFormData({...formData, city: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Zip Code
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.zipCode}
+                      onChange={(e) => setFormData({...formData, zipCode: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
+                      required
+                    />
+                  </div>
+                </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Cash Drawer
+                    Website
                   </label>
                   <input
-                    type="text"
-                    value={formData.cashDrawer}
-                    onChange={(e) => setFormData({...formData, cashDrawer: e.target.value})}
+                    type="url"
+                    value={formData.website}
+                    onChange={(e) => setFormData({...formData, website: e.target.value})}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
-                    placeholder="Drawer A"
-                    required
+                    placeholder="https://example.com"
                   />
                 </div>
 
@@ -459,7 +491,7 @@ export default function StationManagement() {
                     disabled={loading}
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
                   >
-                    {loading ? "Saving..." : editingStation ? "Update Station" : "Add Station"}
+                    {loading ? "Saving..." : editingStore ? "Update Store" : "Add Store"}
                   </button>
                 </div>
               </form>

@@ -33,6 +33,16 @@ export default function Settings({ user }: SettingsProps) {
     timeZone: "America/Chicago",
     dateFormat: "MM/DD/YYYY",
     receiptFooter: "Thank you for your business!",
+    businessHours: "9:00 AM - 6:00 PM",
+    autoBackup: true,
+    backupFrequency: "daily",
+    emailNotifications: true,
+    smsNotifications: false,
+    lowStockThreshold: "10",
+    maxDiscount: "15",
+    requireCustomerInfo: true,
+    printReceipts: true,
+    emailReceipts: false
   })
 
   const [successMessage, setSuccessMessage] = useState("")
@@ -334,6 +344,94 @@ export default function Settings({ user }: SettingsProps) {
                   rows={3}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Business Hours</label>
+                <input
+                  type="text"
+                  name="businessHours"
+                  value={systemSettings.businessHours}
+                  onChange={handleSystemSettingChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Low Stock Threshold</label>
+                <input
+                  type="number"
+                  name="lowStockThreshold"
+                  value={systemSettings.lowStockThreshold}
+                  onChange={handleSystemSettingChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Max Discount (%)</label>
+                <input
+                  type="number"
+                  name="maxDiscount"
+                  value={systemSettings.maxDiscount}
+                  onChange={handleSystemSettingChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div className="md:col-span-2 space-y-3">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="autoBackup"
+                    checked={systemSettings.autoBackup}
+                    onChange={(e) => setSystemSettings({
+                      ...systemSettings,
+                      autoBackup: e.target.checked
+                    })}
+                    className="mr-2"
+                  />
+                  <span className="text-sm text-gray-700">Enable Auto Backup</span>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="emailNotifications"
+                    checked={systemSettings.emailNotifications}
+                    onChange={(e) => setSystemSettings({
+                      ...systemSettings,
+                      emailNotifications: e.target.checked
+                    })}
+                    className="mr-2"
+                  />
+                  <span className="text-sm text-gray-700">Email Notifications</span>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="requireCustomerInfo"
+                    checked={systemSettings.requireCustomerInfo}
+                    onChange={(e) => setSystemSettings({
+                      ...systemSettings,
+                      requireCustomerInfo: e.target.checked
+                    })}
+                    className="mr-2"
+                  />
+                  <span className="text-sm text-gray-700">Require Customer Information</span>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="printReceipts"
+                    checked={systemSettings.printReceipts}
+                    onChange={(e) => setSystemSettings({
+                      ...systemSettings,
+                      printReceipts: e.target.checked
+                    })}
+                    className="mr-2"
+                  />
+                  <span className="text-sm text-gray-700">Auto Print Receipts</span>
+                </label>
               </div>
             </div>
             <button

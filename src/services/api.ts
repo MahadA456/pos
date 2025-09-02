@@ -47,6 +47,45 @@ export interface AuthResponse {
   };
 }
 
+export interface Store {
+  id?: string;
+  name: string;
+  phone: string;
+  address: string;
+  city: string;
+  status: string;
+  zipCode: string;
+  email: string;
+  website: string;
+}
+
+export interface Station {
+  id?: string;
+  name: string;
+  location: string;
+  status: string;
+  ipAddress: string;
+  printerName: string;
+  cashDrawer: string;
+  // Additional fields that might be useful for the frontend
+  assignedUsers?: string[];
+  lastActivity?: string;
+}
+
+export interface LoginHistory {
+  id?: string;
+  userId: string;
+  username: string;
+  loginTime: string;
+  logoutTime?: string;
+  ipAddress: string;
+  userAgent?: string;
+  sessionDuration?: number;
+  status: string; // 'active', 'completed', 'expired', 'terminated'
+  stationId?: string;
+  stationName?: string;
+}
+
 class ApiService {
   private getAuthHeaders(): HeadersInit {
     const token = localStorage.getItem('jwt_token');
@@ -169,6 +208,69 @@ class ApiService {
   // Get current user profile
   async getCurrentUser(): Promise<ApiResponse<AuthResponse>> {
     return this.authenticatedRequest<AuthResponse>('/users/me');
+  }
+
+  // Store Management
+  async getStores(): Promise<ApiResponse<Store[]>> {
+    return this.authenticatedRequest<Store[]>('/admin/stores');
+  }
+
+  async getStore(id: string): Promise<ApiResponse<Store>> {
+    return this.authenticatedRequest<Store>(`/admin/stores/${id}`);
+  }
+
+  async createStore(store: Omit<Store, 'id'>): Promise<ApiResponse<Store>> {
+    return this.authenticatedRequest<Store>('/admin/stores', {
+      method: 'POST',
+      body: JSON.stringify(store),
+    });
+  }
+
+  async updateStore(id: string, store: Omit<Store, 'id'>): Promise<ApiResponse<Store>> {
+    return this.authenticatedRequest<Store>(`/admin/stores/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(store),
+    });
+  }
+
+  async deleteStore(id: string): Promise<ApiResponse<void>> {
+    return this.authenticatedRequest<void>(`/admin/stores/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Station Management
+  async getStations(): Promise<ApiResponse<Station[]>> {
+    return this.authenticatedRequest<Station[]>('/admin/stations');
+  }
+
+  async getStation(id: string): Promise<ApiResponse<Station>> {
+    return this.authenticatedRequest<Station>(`/admin/stations/${id}`);
+  }
+
+  async createStation(station: Omit<Station, 'id'>): Promise<ApiResponse<Station>> {
+    return this.authenticatedRequest<Station>('/admin/stations', {
+      method: 'POST',
+      body: JSON.stringify(station),
+    });
+  }
+
+  async updateStation(id: string, station: Omit<Station, 'id'>): Promise<ApiResponse<Station>> {
+    return this.authenticatedRequest<Station>(`/admin/stations/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(station),
+    });
+  }
+
+  async deleteStation(id: string): Promise<ApiResponse<void>> {
+    return this.authenticatedRequest<void>(`/admin/stations/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Login History
+  async getLoginHistory(): Promise<ApiResponse<LoginHistory[]>> {
+    return this.authenticatedRequest<LoginHistory[]>('/admin/loginHistory');
   }
 
   // Generic authenticated request method
