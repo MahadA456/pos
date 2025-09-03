@@ -142,13 +142,14 @@ export default function SignupPage() {
                 id="role"
                 name="role"
                 value={formData.role}
-                onChange={(e) => setFormData({...formData, role: e.target.value})}
+                onChange={(e) => setFormData({...formData, role: e.target.value as 'SUPER_ADMIN' | 'ADMIN' | 'MANAGER' | 'CASHIER'})}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white text-gray-900"
                 required
               >
                 <option value="">Select a role</option>
                 <option value="SUPER_ADMIN">Super Admin</option>
-                <option value="STORE_MANAGER">Store Manager</option>
+                <option value="ADMIN">Admin</option>
+                <option value="MANAGER">Manager</option>
                 <option value="CASHIER">Cashier</option>
               </select>
             </div>

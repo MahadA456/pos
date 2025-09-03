@@ -14,7 +14,7 @@ export interface SignupRequest {
   email: string;
   password: string;
   confirmPassword: string;
-  role: string;
+  role: 'SUPER_ADMIN' | 'ADMIN' | 'MANAGER' | 'CASHIER';
   assignedStationIds?: string[];
 }
 
