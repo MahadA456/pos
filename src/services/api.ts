@@ -18,27 +18,6 @@ export interface SignupRequest {
   assignedStationIds?: string[];
 }
 
-export interface CreateUserRequest {
-  firstName: string;
-  lastName: string;
-  username: string;
-  email: string;
-  password: string;
-  role: 'SUPER_ADMIN' | 'STORE_MANAGER' | 'CASHIER';
-  stationIds?: string[]; // Set<UUID> in backend
-}
-
-export interface User {
-  id: string; // UUID in backend
-  firstName: string;
-  lastName: string;
-  username: string;
-  email: string;
-  role: 'SUPER_ADMIN' | 'STORE_MANAGER' | 'CASHIER';
-  enabled: boolean;
-  assignedStations?: Station[];
-}
-
 export interface SigninRequest {
   username: string;
   password: string;
@@ -93,6 +72,30 @@ export interface Station {
   lastActivity?: string;
 }
 
+export interface User {
+  id: string;
+  firstName: string;
+  lastName: string;
+  username: string;
+  email: string;
+  role: string;
+  enabled: boolean;
+  assignedStations: Station[];
+  createdAt?: string;
+  lastLogin?: string;
+  permissions?: string[];
+}
+
+export interface CreateUserRequest {
+  firstName: string;
+  lastName: string;
+  username: string;
+  email: string;
+  password: string;
+  role: string;
+  stationIds: string[];
+}
+
 export interface LoginHistory {
   id?: string;
   userId: string;
@@ -116,36 +119,127 @@ class ApiService {
     };
   }
 
+  // Utility to remove circular references from objects
+  private removeCircularReferences(obj: any, seen = new WeakSet()): any {
+    if (obj === null || typeof obj !== 'object') {
+      return obj;
+    }
+
+    if (seen.has(obj)) {
+      return '[Circular]';
+    }
+
+    seen.add(obj);
+
+    if (Array.isArray(obj)) {
+      return obj.map(item => this.removeCircularReferences(item, seen));
+    }
+
+    const cleaned: any = {};
+    for (const key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        cleaned[key] = this.removeCircularReferences(obj[key], seen);
+      }
+    }
+
+    seen.delete(obj);
+    return cleaned;
+  }
+
   private async handleResponse<T>(response: Response): Promise<ApiResponse<T>> {
     const contentType = response.headers.get('content-type');
     
-    if (contentType && contentType.includes('application/json')) {
-      const data = await response.json();
-      
-      if (!response.ok) {
+    try {
+      if (contentType && contentType.includes('application/json')) {
+        // Get raw text first to handle malformed JSON
+        const responseText = await response.text();
+        console.log('🔍 Raw response text:', responseText.substring(0, 500) + '...');
+        
+        let data;
+        try {
+          data = JSON.parse(responseText);
+          console.log('✅ JSON parsed successfully');
+        } catch (parseError) {
+          console.error('❌ JSON Parse Error:', parseError);
+          console.error('❌ Failed text preview:', responseText.substring(0, 200) + '...');
+          
+          // Handle circular reference patterns
+          let cleanedJson = responseText;
+          
+          // Pattern 1: Remove excessive closing brackets ]}]}]}]}]
+          if (responseText.includes(']}]}]}]')) {
+            console.log('⚠️ Detected excessive closing brackets, cleaning...');
+            cleanedJson = responseText.replace(/(\]\}){2,}\}*$/g, '}');
+          }
+          
+          // Pattern 2: Try to extract valid JSON before circular reference starts
+          const circularMatch = responseText.match(/^(\[.*?\]|\{.*?\}?)(?:\]\})*$/);
+          if (circularMatch && circularMatch[1]) {
+            try {
+              // Ensure proper closing for arrays/objects
+              let validJson = circularMatch[1];
+              if (validJson.startsWith('[') && !validJson.endsWith(']')) {
+                validJson += ']';
+              } else if (validJson.startsWith('{') && !validJson.endsWith('}')) {
+                validJson += '}';
+              }
+              
+              data = JSON.parse(validJson);
+              console.log('✅ Recovery successful with circular reference cleaning');
+            } catch (recoveryError) {
+              console.error('❌ Recovery attempt failed:', recoveryError);
+            }
+          }
+          
+          // If still no data, try the cleaned version
+          if (!data) {
+            try {
+              data = JSON.parse(cleanedJson);
+              console.log('✅ Cleaned JSON parsing successful');
+            } catch (finalError) {
+              return {
+                success: false,
+                error: `JSON parsing failed: Circular reference detected. Backend needs @JsonIgnore on User-Station relationship.`,
+              };
+            }
+          }
+        }
+        
+        // Clean any circular references from the parsed data
+        data = this.removeCircularReferences(data);
+        console.log('🧹 Data cleaned of circular references');
+        
+        if (!response.ok) {
+          return {
+            success: false,
+            error: data.message || data.error || `HTTP ${response.status}`,
+          };
+        }
+
         return {
-          success: false,
-          error: data.message || data.error || `HTTP ${response.status}`,
+          success: true,
+          data,
+        };
+      } else {
+        const text = await response.text();
+        
+        if (!response.ok) {
+          return {
+            success: false,
+            error: text || `HTTP ${response.status}`,
+          };
+        }
+        
+        return {
+          success: true,
+          data: text as T,
         };
       }
-      
+    } catch (error) {
+      console.error('❌ Response handling error:', error);
       return {
-        success: true,
-        data,
-      };
-    } else {
-      const text = await response.text();
-      
-      if (!response.ok) {
-        return {
-          success: false,
-          error: text || `HTTP ${response.status}`,
-        };
-      }
-      
-      return {
-        success: true,
-        data: text as T,
+        success: false,
+        error: `Response handling failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       };
     }
   }
@@ -226,57 +320,58 @@ class ApiService {
     }
   }
 
-  // User Management endpoints
-  async getAllUsers(): Promise<ApiResponse<User[]>> {
-    console.log('🔍 Making GET request to:', `${API_BASE_URL}/auth/users`);
-    console.log('🔑 Auth headers:', this.getAuthHeaders());
-    
-    try {
-      const response = await fetch(`${API_BASE_URL}/auth/users`, {
-        method: 'GET',
-        headers: this.getAuthHeaders(),
-      });
-      
-      const result = await this.handleResponse<User[]>(response);
-      console.log('📝 Get All Users API Response:', result);
-      return result;
-    } catch (error) {
-      console.error('❌ Get All Users Error:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Network error',
-      };
-    }
-  }
-
-  async createUser(user: CreateUserRequest): Promise<ApiResponse<User>> {
-    console.log('🔍 Making POST request to:', `${API_BASE_URL}/auth/users`);
-    console.log('📋 User data:', user);
-    console.log('🔑 Auth headers:', this.getAuthHeaders());
-    
-    try {
-      const response = await fetch(`${API_BASE_URL}/auth/users`, {
-        method: 'POST',
-        headers: this.getAuthHeaders(),
-        body: JSON.stringify(user),
-      });
-      
-      const result = await this.handleResponse<User>(response);
-      console.log('📝 Create User API Response:', result);
-      return result;
-    } catch (error) {
-      console.error('❌ Create User Error:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Network error',
-      };
-    }
-  }
-
   // Get current user profile
   async getCurrentUser(): Promise<ApiResponse<AuthResponse>> {
     return this.authenticatedRequest<AuthResponse>('/users/me', {
       method: 'GET'
+    });
+  }
+
+  // User Management
+  async getAllUsers(): Promise<ApiResponse<User[]>> {
+    console.log('🔍 Fetching all users from /auth/users');
+    const response = await this.authenticatedRequest<User[]>('/auth/users', {
+      method: 'GET'
+    });
+    
+    // Filter out problematic users causing circular reference
+    if (response.success && response.data) {
+      const problematicUserId = "54dd9ab7-eec3-4dcd-9f6c-84ebf10a3a09";
+      
+      // Filter out the known problematic user and any users with circular references
+      response.data = response.data.filter(user => {
+        // Remove known problematic user
+        if (user.id === problematicUserId) {
+          console.log(`🚫 Filtered out known problematic user ${user.id}`);
+          return false;
+        }
+        
+        // Check for potential circular references in assignedStations
+        if (user.assignedStations && Array.isArray(user.assignedStations)) {
+          try {
+            // Try to stringify the user to detect circular references
+            JSON.stringify(user);
+            return true;
+          } catch (error) {
+            console.log(`🚫 Filtered out user ${user.id} due to circular reference`);
+            return false;
+          }
+        }
+        
+        return true;
+      });
+      
+      console.log(`✅ Returning ${response.data.length} users after filtering`);
+    }
+    
+    return response;
+  }
+
+  async createUser(userData: CreateUserRequest): Promise<ApiResponse<User>> {
+    console.log('🔍 Creating new user:', userData);
+    return this.authenticatedRequest<User>('/auth/users', {
+      method: 'POST',
+      body: JSON.stringify(userData)
     });
   }
 

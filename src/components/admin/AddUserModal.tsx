@@ -1,17 +1,28 @@
 "use client"
 
-import { useState, ChangeEvent, FormEvent } from "react"
-import { mockStations } from "@/data/mockData"
-import { CreateUserRequest } from "@/services/api"
+import { useState, ChangeEvent, FormEvent, useEffect } from "react"
+import { apiService, CreateUserRequest, Station } from "@/services/api"
+
+interface FormData {
+  firstName: string;
+  lastName: string;
+  username: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  role: string;
+  stationIds: string[];
+}
 
 interface FormErrors {
-  firstName?: string
-  lastName?: string
-  username?: string
-  email?: string
-  password?: string
-  role?: string
-  stationIds?: string
+  firstName?: string;
+  lastName?: string;
+  username?: string;
+  email?: string;
+  password?: string;
+  confirmPassword?: string;
+  role?: string;
+  stationIds?: string;
 }
 
 interface AddUserModalProps {
@@ -20,16 +31,40 @@ interface AddUserModalProps {
 }
 
 export default function AddUserModal({ onClose, onSave }: AddUserModalProps) {
-  const [formData, setFormData] = useState<CreateUserRequest>({
+  const [formData, setFormData] = useState<FormData>({
     firstName: "",
     lastName: "",
     username: "",
     email: "",
     password: "",
-    role: "CASHIER",
+    confirmPassword: "",
+    role: "",
     stationIds: [],
   })
   const [errors, setErrors] = useState<FormErrors>({})
+  const [stations, setStations] = useState<Station[]>([])
+  const [loadingStations, setLoadingStations] = useState(true)
+
+  // Fetch stations from API
+  useEffect(() => {
+    const fetchStations = async () => {
+      try {
+        setLoadingStations(true)
+        const response = await apiService.getStations()
+        if (response.success && response.data) {
+          setStations(response.data)
+        } else {
+          console.error('Failed to fetch stations:', response.error)
+        }
+      } catch (error) {
+        console.error('Error fetching stations:', error)
+      } finally {
+        setLoadingStations(false)
+      }
+    }
+
+    fetchStations()
+  }, [])
 
   const roles = [
     { value: "SUPER_ADMIN", label: "Super Admin" },
@@ -43,7 +78,6 @@ export default function AddUserModal({ onClose, onSave }: AddUserModalProps) {
       ...prev,
       [name]: value,
     }))
-    
     // Clear error when user starts typing
     if (errors[name as keyof FormErrors]) {
       setErrors((prev) => ({
@@ -56,9 +90,9 @@ export default function AddUserModal({ onClose, onSave }: AddUserModalProps) {
   const handleStationChange = (stationId: string) => {
     setFormData((prev) => ({
       ...prev,
-      stationIds: prev.stationIds?.includes(stationId)
-        ? prev.stationIds.filter((id) => id !== stationId)
-        : [...(prev.stationIds || []), stationId],
+      stationIds: prev.stationIds.includes(stationId)
+        ? prev.stationIds.filter((id: string) => id !== stationId)
+        : [...prev.stationIds, stationId],
     }))
   }
 
@@ -72,10 +106,9 @@ export default function AddUserModal({ onClose, onSave }: AddUserModalProps) {
     if (!formData.email.includes("@")) newErrors.email = "Valid email is required"
     if (!formData.password) newErrors.password = "Password is required"
     if (formData.password.length < 6) newErrors.password = "Password must be at least 6 characters"
+    if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = "Passwords do not match"
     if (!formData.role) newErrors.role = "Role is required"
-    if (!formData.stationIds || formData.stationIds.length === 0) {
-      newErrors.stationIds = "At least one station must be assigned"
-    }
+    if (formData.stationIds.length === 0) newErrors.stationIds = "At least one station must be assigned"
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -84,7 +117,17 @@ export default function AddUserModal({ onClose, onSave }: AddUserModalProps) {
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (validateForm()) {
-      onSave(formData)
+      // Convert FormData to CreateUserRequest format
+      const createUserRequest: CreateUserRequest = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
+        role: formData.role,
+        stationIds: formData.stationIds
+      }
+      onSave(createUserRequest)
     }
   }
 
@@ -160,37 +203,58 @@ export default function AddUserModal({ onClose, onSave }: AddUserModalProps) {
             {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
           </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
-              <select
-                name="role"
-                value={formData.role}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-              >
-                <option value="">Select Role</option>
-                <option value="SUPER_ADMIN">Super Admin</option>
-                <option value="ADMIN">Admin</option>
-                <option value="MANAGER">Manager</option>
-                <option value="EMPLOYEE">Employee</option>
-              </select>
-              {errors.role && <p className="text-red-500 text-sm mt-1">{errors.role}</p>}
-            </div>          <div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password *</label>
+            <input
+              type="password"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Role *</label>
+            <select
+              name="role"
+              value={formData.role}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Select Role</option>
+              {roles.map((role) => (
+                <option key={role.value} value={role.value}>
+                  {role.label}
+                </option>
+              ))}
+            </select>
+            {errors.role && <p className="text-red-500 text-xs mt-1">{errors.role}</p>}
+          </div>
+
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Assigned Stations *</label>
             <div className="space-y-2 max-h-32 overflow-y-auto border border-gray-300 rounded-lg p-2">
-              {mockStations.map((station) => (
-                <label key={station.id} className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={formData.stationIds?.includes(station.id) || false}
-                    onChange={() => handleStationChange(station.id)}
-                    className="mr-2"
-                  />
-                  <span className="text-sm">
-                    {station.name} - {station.location}
-                  </span>
-                </label>
-              ))}
+              {loadingStations ? (
+                <div className="text-center text-gray-500 py-2">Loading stations...</div>
+              ) : stations.length === 0 ? (
+                <div className="text-center text-gray-500 py-2">No stations available</div>
+              ) : (
+                stations.map((station) => (
+                  <label key={station.id} className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.stationIds.includes(station.id || '')}
+                      onChange={() => handleStationChange(station.id || '')}
+                      className="mr-2"
+                    />
+                    <span className="text-sm">
+                      {station.name} - {station.location}
+                    </span>
+                  </label>
+                ))
+              )}
             </div>
             {errors.stationIds && <p className="text-red-500 text-xs mt-1">{errors.stationIds}</p>}
           </div>

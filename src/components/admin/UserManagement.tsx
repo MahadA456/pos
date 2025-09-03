@@ -5,71 +5,122 @@ import { User } from "@/utils/auth"
 import { apiService, User as ApiUser, CreateUserRequest } from "@/services/api"
 import AddUserModal from "./AddUserModal"
 
+interface UserData {
+  id: string
+  firstName: string
+  lastName: string
+  username: string
+  email: string
+  role: string
+  enabled: boolean
+  assignedStations: any[]
+  lastLogin?: string
+  createdAt?: string
+  permissions?: string[]
+}
+
 interface UserManagementProps {
   user: User
 }
 
 export default function UserManagement({ user }: UserManagementProps) {
-  const [users, setUsers] = useState<ApiUser[]>([])
+  const [users, setUsers] = useState<UserData[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState("")
+  const [error, setError] = useState<string | null>(null)
 
   const [showAddModal, setShowAddModal] = useState(false)
-  const [selectedUser, setSelectedUser] = useState<ApiUser | null>(null)
+  const [selectedUser, setSelectedUser] = useState<UserData | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [roleFilter, setRoleFilter] = useState("all")
 
+  // Fetch users from API
   useEffect(() => {
-    loadUsers()
-  }, [])
-
-  const loadUsers = async () => {
-    try {
-      setLoading(true)
-      const response = await apiService.getAllUsers()
-      console.log('📊 Users Response:', response)
-      
-      if (response.success && response.data) {
-        console.log('📋 Users Data:', response.data)
-        setUsers(response.data)
-        setError("")
-      } else {
-        setError(response.error || "Failed to load users")
+    const fetchUsers = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        console.log('🔍 Fetching users from API...')
+        
+        const response = await apiService.getAllUsers()
+        console.log('📝 Users API Response:', response)
+        
+        if (response.success && response.data) {
+          // Map backend user data to frontend format
+          const mappedUsers = response.data.map((apiUser: ApiUser) => ({
+            id: apiUser.id,
+            firstName: apiUser.firstName || '',
+            lastName: apiUser.lastName || '',
+            username: apiUser.username || '',
+            email: apiUser.email || '',
+            role: apiUser.role || 'CASHIER',
+            enabled: apiUser.enabled !== undefined ? apiUser.enabled : true,
+            assignedStations: apiUser.assignedStations || [],
+            lastLogin: apiUser.lastLogin || '',
+            createdAt: apiUser.createdAt || '',
+            permissions: apiUser.permissions || []
+          }))
+          
+          setUsers(mappedUsers)
+          console.log('✅ Users loaded successfully:', mappedUsers.length)
+        } else {
+          throw new Error(response.message || response.error || 'Failed to fetch users')
+        }
+      } catch (err) {
+        console.error('❌ Error fetching users:', err)
+        setError(err instanceof Error ? err.message : 'Failed to load users')
+        setUsers([])
+      } finally {
+        setLoading(false)
       }
-    } catch (err) {
-      console.error('❌ Users Error:', err)
-      setError("Failed to load users")
-    } finally {
-      setLoading(false)
     }
-  }
+
+    fetchUsers()
+  }, [])
 
   const handleCreateUser = async (userData: CreateUserRequest) => {
     try {
+      console.log('🔍 Creating user:', userData)
       const response = await apiService.createUser(userData)
       
       if (response.success && response.data) {
         console.log('✅ User created successfully:', response.data)
-        await loadUsers() // Reload users list
+        // Refresh the users list
+        const usersResponse = await apiService.getAllUsers()
+        if (usersResponse.success && usersResponse.data) {
+          const mappedUsers = usersResponse.data.map((apiUser: ApiUser) => ({
+            id: apiUser.id,
+            firstName: apiUser.firstName || '',
+            lastName: apiUser.lastName || '',
+            username: apiUser.username || '',
+            email: apiUser.email || '',
+            role: apiUser.role || 'CASHIER',
+            enabled: apiUser.enabled !== undefined ? apiUser.enabled : true,
+            assignedStations: apiUser.assignedStations || [],
+            lastLogin: apiUser.lastLogin || '',
+            createdAt: apiUser.createdAt || '',
+            permissions: apiUser.permissions || []
+          }))
+          setUsers(mappedUsers)
+        }
         setShowAddModal(false)
-        setError("")
+        setError(null)
       } else {
-        setError(response.error || "Failed to create user")
+        setError(response.error || 'Failed to create user')
       }
     } catch (err) {
-      console.error('❌ Create User Error:', err)
-      setError("Failed to create user")
+      console.error('❌ Error creating user:', err)
+      setError(err instanceof Error ? err.message : 'Failed to create user')
     }
   }
 
   const getStatusColor = (enabled: boolean) => {
     return enabled 
       ? "bg-green-100 text-green-800" 
-      : "bg-red-100 text-red-800"
+      : "bg-gray-100 text-gray-800"
   }
 
   const getStatusText = (enabled: boolean) => {
-    return enabled ? "Active" : "Inactive"
+    return enabled ? "active" : "inactive"
   }
 
   const getRoleColor = (role: string) => {
@@ -81,23 +132,68 @@ export default function UserManagement({ user }: UserManagementProps) {
     }
   }
 
-  const getRoleDisplayName = (role: string) => {
-    switch (role) {
-      case "SUPER_ADMIN": return "Super Admin"
-      case "STORE_MANAGER": return "Store Manager"
-      case "CASHIER": return "Cashier"
-      default: return role
-    }
-  }
-
   const filteredUsers = users.filter(user => {
-    const matchesSearch = (user.firstName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (user.lastName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (user.username || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (user.email || '').toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesSearch = user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         user.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         user.email.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesRole = roleFilter === "all" || user.role === roleFilter
     return matchesSearch && matchesRole
   })
+
+  const handleAddUser = () => {
+    // This will be implemented when you want to add the POST API
+    setShowAddModal(false)
+  }
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="p-6 bg-white rounded-lg shadow-sm">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">User Management</h2>
+            <p className="text-gray-600">Manage employees, roles, and permissions</p>
+          </div>
+        </div>
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading users...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="p-6 bg-white rounded-lg shadow-sm">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">User Management</h2>
+            <p className="text-gray-600">Manage employees, roles, and permissions</p>
+          </div>
+        </div>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <div className="flex items-center">
+            <div className="text-red-600 mr-3">⚠️</div>
+            <div>
+              <h3 className="text-red-800 font-medium">Error Loading Users</h3>
+              <p className="text-red-700 mt-1">{error}</p>
+              <button
+                onClick={() => window.location.reload()}
+                className="mt-3 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Try Again
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="p-6 bg-white rounded-lg shadow-sm">
@@ -114,32 +210,8 @@ export default function UserManagement({ user }: UserManagementProps) {
         </button>
       </div>
 
-      {/* Error Message */}
-      {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-red-700">{error}</p>
-          <button
-            onClick={() => {
-              setError("")
-              loadUsers()
-            }}
-            className="mt-2 text-sm text-red-600 hover:text-red-800 underline"
-          >
-            Try Again
-          </button>
-        </div>
-      )}
-
-      {/* Loading State */}
-      {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          <span className="ml-3 text-gray-600">Loading users...</span>
-        </div>
-      ) : (
-        <>
-          {/* Filters */}
-          <div className="flex flex-col md:flex-row gap-4 mb-6">
+      {/* Filters */}
+      <div className="flex flex-col md:flex-row gap-4 mb-6">
         <div className="flex-1">
           <input
             type="text"
@@ -188,7 +260,7 @@ export default function UserManagement({ user }: UserManagementProps) {
                 </td>
                 <td className="px-4 py-4">
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleColor(user.role)}`}>
-                    {getRoleDisplayName(user.role)}
+                    {user.role.replace('_', ' ')}
                   </span>
                 </td>
                 <td className="px-4 py-4">
@@ -198,18 +270,20 @@ export default function UserManagement({ user }: UserManagementProps) {
                 </td>
                 <td className="px-4 py-4">
                   <div className="text-sm text-gray-900">
-                    {user.assignedStations?.length || 0} station(s)
+                    {user.assignedStations.length} station(s)
                   </div>
                   <div className="text-xs text-gray-500">
-                    {user.assignedStations?.map(station => station.name).join(', ') || 'None'}
+                    {user.assignedStations.map((station: any) => 
+                      typeof station === 'object' ? station.name : station
+                    ).join(', ')}
                   </div>
                 </td>
                 <td className="px-4 py-4">
                   <div className="text-sm text-gray-900">
-                    N/A
+                    {user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : 'Never'}
                   </div>
                   <div className="text-xs text-gray-500">
-                    {/* Last login not in User model */}
+                    {user.lastLogin ? new Date(user.lastLogin).toLocaleTimeString() : ''}
                   </div>
                 </td>
                 <td className="px-4 py-4">
@@ -259,12 +333,10 @@ export default function UserManagement({ user }: UserManagementProps) {
 
       {/* Add User Modal */}
       {showAddModal && (
-        <AddUserModal 
+        <AddUserModal
           onClose={() => setShowAddModal(false)}
           onSave={handleCreateUser}
         />
-      )}
-        </>
       )}
     </div>
   )
