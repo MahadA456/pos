@@ -24,7 +24,7 @@ export interface CreateUserRequest {
   username: string;
   email: string;
   password: string;
-  role: 'SUPER_ADMIN' | 'STORE_MANAGER' | 'CASHIER';
+  role: 'SUPER_ADMIN' | 'ADMIN' | 'MANAGER' | 'CASHIER';
   stationIds?: string[]; // Set<UUID> in backend
 }
 

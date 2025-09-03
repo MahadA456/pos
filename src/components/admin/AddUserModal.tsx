@@ -1,8 +1,7 @@
 "use client"
 
-import { useState, ChangeEvent, FormEvent } from "react"
-import { mockStations } from "@/data/mockData"
-import { CreateUserRequest } from "@/services/api"
+import { useState, useEffect, ChangeEvent, FormEvent } from "react"
+import { apiService, CreateUserRequest, Station } from "@/services/api"
 
 interface FormErrors {
   firstName?: string
@@ -20,6 +19,8 @@ interface AddUserModalProps {
 }
 
 export default function AddUserModal({ onClose, onSave }: AddUserModalProps) {
+  const [stations, setStations] = useState<Station[]>([])
+  const [loadingStations, setLoadingStations] = useState(true)
   const [formData, setFormData] = useState<CreateUserRequest>({
     firstName: "",
     lastName: "",
@@ -30,6 +31,28 @@ export default function AddUserModal({ onClose, onSave }: AddUserModalProps) {
     stationIds: [],
   })
   const [errors, setErrors] = useState<FormErrors>({})
+
+  // Fetch stations on component mount
+  useEffect(() => {
+    const fetchStations = async () => {
+      try {
+        setLoadingStations(true)
+        const response = await apiService.getStations()
+        if (response.success && response.data) {
+          setStations(response.data)
+        } else {
+          console.error('Failed to fetch stations:', response.error)
+          // You could set an error state here if needed
+        }
+      } catch (error) {
+        console.error('Error fetching stations:', error)
+      } finally {
+        setLoadingStations(false)
+      }
+    }
+
+    fetchStations()
+  }, [])
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -166,25 +189,31 @@ export default function AddUserModal({ onClose, onSave }: AddUserModalProps) {
                 <option value="SUPER_ADMIN">Super Admin</option>
                 <option value="ADMIN">Admin</option>
                 <option value="MANAGER">Manager</option>
-                <option value="EMPLOYEE">Employee</option>
+                <option value="CASHIER">Cashier</option>
               </select>
               {errors.role && <p className="text-red-500 text-sm mt-1">{errors.role}</p>}
             </div>          <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Assigned Stations *</label>
             <div className="space-y-2 max-h-32 overflow-y-auto border border-gray-300 rounded-lg p-2">
-              {mockStations.map((station) => (
-                <label key={station.id} className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={formData.stationIds?.includes(station.id) || false}
-                    onChange={() => handleStationChange(station.id)}
-                    className="mr-2"
-                  />
-                  <span className="text-sm">
-                    {station.name} - {station.location}
-                  </span>
-                </label>
-              ))}
+              {loadingStations ? (
+                <div className="text-center py-2 text-gray-500">Loading stations...</div>
+              ) : stations.length > 0 ? (
+                stations.filter(station => station.id).map((station) => (
+                  <label key={station.id} className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.stationIds?.includes(station.id!) || false}
+                      onChange={() => handleStationChange(station.id!)}
+                      className="mr-2"
+                    />
+                    <span className="text-sm">
+                      {station.name} - {station.location}
+                    </span>
+                  </label>
+                ))
+              ) : (
+                <div className="text-center py-2 text-gray-500">No stations available</div>
+              )}
             </div>
             {errors.stationIds && <p className="text-red-500 text-xs mt-1">{errors.stationIds}</p>}
           </div>
