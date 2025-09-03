@@ -33,7 +33,7 @@ export default function SignupPage() {
       } else {
         setError(response.error || "Signup failed")
       }
-    } catch (err) {
+    } catch {
       setError("An error occurred")
     } finally {
       setLoading(false)

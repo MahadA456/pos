@@ -31,12 +31,6 @@ export default function AddUserModal({ onClose, onSave }: AddUserModalProps) {
   })
   const [errors, setErrors] = useState<FormErrors>({})
 
-  const roles = [
-    { value: "SUPER_ADMIN", label: "Super Admin" },
-    { value: "STORE_MANAGER", label: "Store Manager" }, 
-    { value: "CASHIER", label: "Cashier" }
-  ]
-
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({

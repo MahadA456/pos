@@ -37,7 +37,7 @@ export default function ForgotPasswordPage() {
       } else {
         setError(response.error || "Failed to send reset email")
       }
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred. Please try again.")
     } finally {
       setLoading(false)
@@ -54,7 +54,7 @@ export default function ForgotPasswordPage() {
               <span className="text-2xl text-white">🔑</span>
             </div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Forgot Password</h1>
-            <p className="text-gray-600">Enter your email address and we'll send you a link to reset your password</p>
+            <p className="text-gray-600">Enter your email address and we&apos;ll send you a link to reset your password</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -131,7 +131,7 @@ export default function ForgotPasswordPage() {
             </div>
             <h2 className="text-4xl font-bold mb-4">Password Recovery</h2>
             <p className="text-xl text-blue-100 mb-8">
-              We'll help you get back into your OneStep POS account
+              We&apos;ll help you get back into your OneStep POS account
             </p>
           </div>
 
@@ -172,7 +172,7 @@ export default function ForgotPasswordPage() {
           <div className="mt-12 p-6 bg-white/10 rounded-lg">
             <h3 className="font-semibold mb-2">Need Help?</h3>
             <p className="text-blue-100 text-sm">
-              If you don't receive the email within a few minutes, check your spam folder or contact support.
+              If you don&apos;t receive the email within a few minutes, check your spam folder or contact support.
             </p>
           </div>
         </div>

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { apiService, SigninRequest } from "@/services/api"
-import { authManager, User } from "@/utils/auth"
+import { authManager } from "@/utils/auth"
 
 export default function LoginPage() {
   const [formData, setFormData] = useState<SigninRequest>({
@@ -47,20 +47,6 @@ export default function LoginPage() {
       const response = await apiService.signin(formData)
 
       if (response.success && response.data) {
-        // Transform the response to match our expected format
-        const userData = {
-          id: response.data.id || 0,
-          firstName: response.data.firstName || response.data.username,
-          lastName: response.data.lastName || '',
-          username: response.data.username,
-          email: response.data.email || `${response.data.username}@example.com`,
-          role: response.data.role,
-          status: response.data.status || 'Active',
-          assignedStations: response.data.assignedStationIds || [],
-          station: response.data.station,
-          loginTime: new Date().toISOString()
-        }
-        
         // Save authentication data
         authManager.setAuth(response.data)
         
@@ -69,7 +55,7 @@ export default function LoginPage() {
       } else {
         setError(response.error || "Invalid username or password")
       }
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred. Please try again.")
     } finally {
       setLoading(false)

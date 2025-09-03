@@ -74,7 +74,7 @@ export default function ResetPasswordPage() {
       } else {
         setError(response.error || "Failed to reset password")
       }
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred. Please try again.")
     } finally {
       setLoading(false)
