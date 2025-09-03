@@ -5,17 +5,12 @@ import { User } from "@/utils/auth"
 import { apiService, User as ApiUser, CreateUserRequest } from "@/services/api"
 import AddUserModal from "./AddUserModal"
 
-interface UserManagementProps {
-  user: User
-}
-
-export default function UserManagement({ user: _user }: UserManagementProps) {
+export default function UserManagement() {
   const [users, setUsers] = useState<ApiUser[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
 
   const [showAddModal, setShowAddModal] = useState(false)
-  const [_selectedUser, setSelectedUser] = useState<ApiUser | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [roleFilter, setRoleFilter] = useState("all")
 
@@ -215,7 +210,7 @@ export default function UserManagement({ user: _user }: UserManagementProps) {
                 <td className="px-4 py-4">
                   <div className="flex space-x-2">
                     <button
-                      onClick={() => setSelectedUser(user)}
+                      onClick={() => {/* TODO: Implement edit functionality */}}
                       className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
                     >
                       Edit

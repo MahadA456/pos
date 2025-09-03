@@ -62,7 +62,7 @@ export default function Settings({ user }: SettingsProps) {
     }))
   }
 
-  const handleSystemSettingChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleSystemSettingChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setSystemSettings((prev) => ({
       ...prev,
