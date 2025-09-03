@@ -9,13 +9,13 @@ interface UserManagementProps {
   user: User
 }
 
-export default function UserManagement({ user }: UserManagementProps) {
+export default function UserManagement({ user: _user }: UserManagementProps) {
   const [users, setUsers] = useState<ApiUser[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
 
   const [showAddModal, setShowAddModal] = useState(false)
-  const [selectedUser, setSelectedUser] = useState<ApiUser | null>(null)
+  const [_selectedUser, setSelectedUser] = useState<ApiUser | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [roleFilter, setRoleFilter] = useState("all")
 

@@ -93,10 +93,10 @@ export default function EditUserModal({ user, onClose, onSave }: EditUserModalPr
     if (validateForm()) {
       let updatedUser: User;
       if (!formData.password) {
-        const { password, confirmPassword, ...userWithoutPassword } = formData;
+        const { password: _password, confirmPassword: _confirmPassword, ...userWithoutPassword } = formData;
         updatedUser = userWithoutPassword;
       } else {
-        const { confirmPassword, ...userWithPassword } = formData;
+        const { confirmPassword: _confirmPassword, ...userWithPassword } = formData;
         updatedUser = userWithPassword;
       }
       onSave(updatedUser)

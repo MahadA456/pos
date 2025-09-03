@@ -44,7 +44,7 @@ export default function StationManagement() {
       } else {
         setError(response.error || "Failed to load stations")
       }
-    } catch (err) {
+    } catch {
       setError("Failed to load stations")
     } finally {
       setLoading(false)
@@ -71,7 +71,7 @@ export default function StationManagement() {
       } else {
         setError(response.error || "Failed to save station")
       }
-    } catch (err) {
+    } catch {
       setError("Failed to save station")
     } finally {
       setLoading(false)
@@ -104,7 +104,7 @@ export default function StationManagement() {
       } else {
         setError(response.error || "Failed to delete station")
       }
-    } catch (err) {
+    } catch {
       setError("Failed to delete station")
     } finally {
       setLoading(false)

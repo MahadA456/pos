@@ -49,7 +49,7 @@ export default function StoreManagement() {
       } else {
         setError(response.error || "Failed to load stores")
       }
-    } catch (err) {
+    } catch {
       setError("Failed to load stores")
     } finally {
       setLoading(false)
@@ -76,7 +76,7 @@ export default function StoreManagement() {
       } else {
         setError(response.error || "Failed to save store")
       }
-    } catch (err) {
+    } catch {
       setError("Failed to save store")
     } finally {
       setLoading(false)
@@ -111,7 +111,7 @@ export default function StoreManagement() {
       } else {
         setError(response.error || "Failed to delete store")
       }
-    } catch (err) {
+    } catch {
       setError("Failed to delete store")
     } finally {
       setLoading(false)
