@@ -1,41 +1,75 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { User } from "@/utils/auth"
-
-interface UserData {
-  id: number
-  firstName: string
-  lastName: string
-  username: string
-  email: string
-  role: string
-  status: "active" | "inactive" | "suspended"
-  assignedStations: string[]
-  lastLogin: string
-  createdAt: string
-  permissions: string[]
-}
+import { apiService, User as ApiUser, CreateUserRequest } from "@/services/api"
+import AddUserModal from "./AddUserModal"
 
 interface UserManagementProps {
   user: User
 }
 
 export default function UserManagement({ user }: UserManagementProps) {
-  const [users, setUsers] = useState<UserData[]>([])
+  const [users, setUsers] = useState<ApiUser[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
 
   const [showAddModal, setShowAddModal] = useState(false)
-  const [selectedUser, setSelectedUser] = useState<UserData | null>(null)
+  const [selectedUser, setSelectedUser] = useState<ApiUser | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [roleFilter, setRoleFilter] = useState("all")
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "active": return "bg-green-100 text-green-800"
-      case "inactive": return "bg-gray-100 text-gray-800"
-      case "suspended": return "bg-red-100 text-red-800"
-      default: return "bg-gray-100 text-gray-800"
+  useEffect(() => {
+    loadUsers()
+  }, [])
+
+  const loadUsers = async () => {
+    try {
+      setLoading(true)
+      const response = await apiService.getAllUsers()
+      console.log('📊 Users Response:', response)
+      
+      if (response.success && response.data) {
+        console.log('📋 Users Data:', response.data)
+        setUsers(response.data)
+        setError("")
+      } else {
+        setError(response.error || "Failed to load users")
+      }
+    } catch (err) {
+      console.error('❌ Users Error:', err)
+      setError("Failed to load users")
+    } finally {
+      setLoading(false)
     }
+  }
+
+  const handleCreateUser = async (userData: CreateUserRequest) => {
+    try {
+      const response = await apiService.createUser(userData)
+      
+      if (response.success && response.data) {
+        console.log('✅ User created successfully:', response.data)
+        await loadUsers() // Reload users list
+        setShowAddModal(false)
+        setError("")
+      } else {
+        setError(response.error || "Failed to create user")
+      }
+    } catch (err) {
+      console.error('❌ Create User Error:', err)
+      setError("Failed to create user")
+    }
+  }
+
+  const getStatusColor = (enabled: boolean) => {
+    return enabled 
+      ? "bg-green-100 text-green-800" 
+      : "bg-red-100 text-red-800"
+  }
+
+  const getStatusText = (enabled: boolean) => {
+    return enabled ? "Active" : "Inactive"
   }
 
   const getRoleColor = (role: string) => {
@@ -47,32 +81,23 @@ export default function UserManagement({ user }: UserManagementProps) {
     }
   }
 
+  const getRoleDisplayName = (role: string) => {
+    switch (role) {
+      case "SUPER_ADMIN": return "Super Admin"
+      case "STORE_MANAGER": return "Store Manager"
+      case "CASHIER": return "Cashier"
+      default: return role
+    }
+  }
+
   const filteredUsers = users.filter(user => {
-    const matchesSearch = user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesSearch = (user.firstName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (user.lastName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (user.username || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (user.email || '').toLowerCase().includes(searchTerm.toLowerCase())
     const matchesRole = roleFilter === "all" || user.role === roleFilter
     return matchesSearch && matchesRole
   })
-
-  const handleAddUser = () => {
-    const newUser: UserData = {
-      id: users.length + 1,
-      firstName: "New",
-      lastName: "User",
-      username: "new.user",
-      email: "new.user@onestep.com",
-      role: "CASHIER",
-      status: "active",
-      assignedStations: [],
-      lastLogin: "",
-      createdAt: new Date().toISOString(),
-      permissions: ["sales"]
-    }
-    setUsers([...users, newUser])
-    setShowAddModal(false)
-  }
 
   return (
     <div className="p-6 bg-white rounded-lg shadow-sm">
@@ -89,8 +114,32 @@ export default function UserManagement({ user }: UserManagementProps) {
         </button>
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-col md:flex-row gap-4 mb-6">
+      {/* Error Message */}
+      {error && (
+        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-red-700">{error}</p>
+          <button
+            onClick={() => {
+              setError("")
+              loadUsers()
+            }}
+            className="mt-2 text-sm text-red-600 hover:text-red-800 underline"
+          >
+            Try Again
+          </button>
+        </div>
+      )}
+
+      {/* Loading State */}
+      {loading ? (
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <span className="ml-3 text-gray-600">Loading users...</span>
+        </div>
+      ) : (
+        <>
+          {/* Filters */}
+          <div className="flex flex-col md:flex-row gap-4 mb-6">
         <div className="flex-1">
           <input
             type="text"
@@ -139,28 +188,28 @@ export default function UserManagement({ user }: UserManagementProps) {
                 </td>
                 <td className="px-4 py-4">
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleColor(user.role)}`}>
-                    {user.role.replace('_', ' ')}
+                    {getRoleDisplayName(user.role)}
                   </span>
                 </td>
                 <td className="px-4 py-4">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(user.status)}`}>
-                    {user.status}
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(user.enabled)}`}>
+                    {getStatusText(user.enabled)}
                   </span>
                 </td>
                 <td className="px-4 py-4">
                   <div className="text-sm text-gray-900">
-                    {user.assignedStations.length} station(s)
+                    {user.assignedStations?.length || 0} station(s)
                   </div>
                   <div className="text-xs text-gray-500">
-                    {user.assignedStations.join(', ')}
+                    {user.assignedStations?.map(station => station.name).join(', ') || 'None'}
                   </div>
                 </td>
                 <td className="px-4 py-4">
                   <div className="text-sm text-gray-900">
-                    {user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : 'Never'}
+                    N/A
                   </div>
                   <div className="text-xs text-gray-500">
-                    {user.lastLogin ? new Date(user.lastLogin).toLocaleTimeString() : ''}
+                    {/* Last login not in User model */}
                   </div>
                 </td>
                 <td className="px-4 py-4">
@@ -190,7 +239,7 @@ export default function UserManagement({ user }: UserManagementProps) {
         </div>
         <div className="bg-green-50 p-4 rounded-lg">
           <div className="text-2xl font-bold text-green-600">
-            {users.filter(u => u.status === 'active').length}
+            {users.filter(u => u.enabled === true).length}
           </div>
           <div className="text-sm text-green-700">Active Users</div>
         </div>
@@ -210,69 +259,12 @@ export default function UserManagement({ user }: UserManagementProps) {
 
       {/* Add User Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold mb-4">Add New User</h3>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
-                  <input
-                    type="text"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="John"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-                  <input
-                    type="text"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Doe"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
-                <input
-                  type="text"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="john.doe"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <input
-                  type="email"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="john.doe@onestep.com"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
-                <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                  <option value="CASHIER">Cashier</option>
-                  <option value="STORE_MANAGER">Store Manager</option>
-                  <option value="SUPER_ADMIN">Super Admin</option>
-                </select>
-              </div>
-            </div>
-            <div className="flex space-x-3 mt-6">
-              <button
-                onClick={() => setShowAddModal(false)}
-                className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleAddUser}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Add User
-              </button>
-            </div>
-          </div>
-        </div>
+        <AddUserModal 
+          onClose={() => setShowAddModal(false)}
+          onSave={handleCreateUser}
+        />
+      )}
+        </>
       )}
     </div>
   )

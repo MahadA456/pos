@@ -18,6 +18,27 @@ export interface SignupRequest {
   assignedStationIds?: string[];
 }
 
+export interface CreateUserRequest {
+  firstName: string;
+  lastName: string;
+  username: string;
+  email: string;
+  password: string;
+  role: 'SUPER_ADMIN' | 'STORE_MANAGER' | 'CASHIER';
+  stationIds?: string[]; // Set<UUID> in backend
+}
+
+export interface User {
+  id: string; // UUID in backend
+  firstName: string;
+  lastName: string;
+  username: string;
+  email: string;
+  role: 'SUPER_ADMIN' | 'STORE_MANAGER' | 'CASHIER';
+  enabled: boolean;
+  assignedStations?: Station[];
+}
+
 export interface SigninRequest {
   username: string;
   password: string;
@@ -198,6 +219,53 @@ class ApiService {
       
       return this.handleResponse(response);
     } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Network error',
+      };
+    }
+  }
+
+  // User Management endpoints
+  async getAllUsers(): Promise<ApiResponse<User[]>> {
+    console.log('🔍 Making GET request to:', `${API_BASE_URL}/auth/users`);
+    console.log('🔑 Auth headers:', this.getAuthHeaders());
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/users`, {
+        method: 'GET',
+        headers: this.getAuthHeaders(),
+      });
+      
+      const result = await this.handleResponse<User[]>(response);
+      console.log('📝 Get All Users API Response:', result);
+      return result;
+    } catch (error) {
+      console.error('❌ Get All Users Error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Network error',
+      };
+    }
+  }
+
+  async createUser(user: CreateUserRequest): Promise<ApiResponse<User>> {
+    console.log('🔍 Making POST request to:', `${API_BASE_URL}/auth/users`);
+    console.log('📋 User data:', user);
+    console.log('🔑 Auth headers:', this.getAuthHeaders());
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/users`, {
+        method: 'POST',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify(user),
+      });
+      
+      const result = await this.handleResponse<User>(response);
+      console.log('📝 Create User API Response:', result);
+      return result;
+    } catch (error) {
+      console.error('❌ Create User Error:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Network error',

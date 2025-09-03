@@ -2,48 +2,40 @@
 
 import { useState, ChangeEvent, FormEvent } from "react"
 import { mockStations } from "@/data/mockData"
-
-interface FormData {
-  firstName: string;
-  lastName: string;
-  username: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-  role: string;
-  assignedStations: string[];
-}
+import { CreateUserRequest } from "@/services/api"
 
 interface FormErrors {
-  firstName?: string;
-  lastName?: string;
-  username?: string;
-  email?: string;
-  password?: string;
-  confirmPassword?: string;
-  role?: string;
-  assignedStations?: string;
+  firstName?: string
+  lastName?: string
+  username?: string
+  email?: string
+  password?: string
+  role?: string
+  stationIds?: string
 }
 
 interface AddUserModalProps {
   onClose: () => void;
-  onSave: (user: FormData) => void;
+  onSave: (user: CreateUserRequest) => void;
 }
 
 export default function AddUserModal({ onClose, onSave }: AddUserModalProps) {
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState<CreateUserRequest>({
     firstName: "",
     lastName: "",
     username: "",
     email: "",
     password: "",
-    confirmPassword: "",
-    role: "",
-    assignedStations: [],
+    role: "CASHIER",
+    stationIds: [],
   })
   const [errors, setErrors] = useState<FormErrors>({})
 
-  const roles = ["Super Admin", "Store Manager", "Cashier"]
+  const roles = [
+    { value: "SUPER_ADMIN", label: "Super Admin" },
+    { value: "STORE_MANAGER", label: "Store Manager" }, 
+    { value: "CASHIER", label: "Cashier" }
+  ]
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -51,6 +43,7 @@ export default function AddUserModal({ onClose, onSave }: AddUserModalProps) {
       ...prev,
       [name]: value,
     }))
+    
     // Clear error when user starts typing
     if (errors[name as keyof FormErrors]) {
       setErrors((prev) => ({
@@ -63,9 +56,9 @@ export default function AddUserModal({ onClose, onSave }: AddUserModalProps) {
   const handleStationChange = (stationId: string) => {
     setFormData((prev) => ({
       ...prev,
-      assignedStations: prev.assignedStations.includes(stationId)
-        ? prev.assignedStations.filter((id) => id !== stationId)
-        : [...prev.assignedStations, stationId],
+      stationIds: prev.stationIds?.includes(stationId)
+        ? prev.stationIds.filter((id) => id !== stationId)
+        : [...(prev.stationIds || []), stationId],
     }))
   }
 
@@ -79,9 +72,10 @@ export default function AddUserModal({ onClose, onSave }: AddUserModalProps) {
     if (!formData.email.includes("@")) newErrors.email = "Valid email is required"
     if (!formData.password) newErrors.password = "Password is required"
     if (formData.password.length < 6) newErrors.password = "Password must be at least 6 characters"
-    if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = "Passwords do not match"
     if (!formData.role) newErrors.role = "Role is required"
-    if (formData.assignedStations.length === 0) newErrors.assignedStations = "At least one station must be assigned"
+    if (!formData.stationIds || formData.stationIds.length === 0) {
+      newErrors.stationIds = "At least one station must be assigned"
+    }
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -166,44 +160,29 @@ export default function AddUserModal({ onClose, onSave }: AddUserModalProps) {
             {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password *</label>
-            <input
-              type="password"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Role *</label>
-            <select
-              name="role"
-              value={formData.role}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Select Role</option>
-              {roles.map((role) => (
-                <option key={role} value={role}>
-                  {role}
-                </option>
-              ))}
-            </select>
-            {errors.role && <p className="text-red-500 text-xs mt-1">{errors.role}</p>}
-          </div>
-
-          <div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
+              <select
+                name="role"
+                value={formData.role}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+              >
+                <option value="">Select Role</option>
+                <option value="SUPER_ADMIN">Super Admin</option>
+                <option value="ADMIN">Admin</option>
+                <option value="MANAGER">Manager</option>
+                <option value="EMPLOYEE">Employee</option>
+              </select>
+              {errors.role && <p className="text-red-500 text-sm mt-1">{errors.role}</p>}
+            </div>          <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Assigned Stations *</label>
             <div className="space-y-2 max-h-32 overflow-y-auto border border-gray-300 rounded-lg p-2">
               {mockStations.map((station) => (
                 <label key={station.id} className="flex items-center">
                   <input
                     type="checkbox"
-                    checked={formData.assignedStations.includes(station.id)}
+                    checked={formData.stationIds?.includes(station.id) || false}
                     onChange={() => handleStationChange(station.id)}
                     className="mr-2"
                   />
@@ -213,7 +192,7 @@ export default function AddUserModal({ onClose, onSave }: AddUserModalProps) {
                 </label>
               ))}
             </div>
-            {errors.assignedStations && <p className="text-red-500 text-xs mt-1">{errors.assignedStations}</p>}
+            {errors.stationIds && <p className="text-red-500 text-xs mt-1">{errors.stationIds}</p>}
           </div>
 
           <div className="flex space-x-4 pt-4">
