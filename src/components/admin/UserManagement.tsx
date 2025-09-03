@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { User } from "@/utils/auth"
 import { apiService, User as ApiUser, CreateUserRequest } from "@/services/api"
 import AddUserModal from "./AddUserModal"
 

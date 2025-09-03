@@ -59,7 +59,7 @@ export default function Home() {
         case "dashboard":
           return <Dashboard user={currentUser} />
         case "users":
-          return <UserManagement user={currentUser} />
+          return <UserManagement />
         case "loginHistory":
           return <LoginHistory />
         case "stations":
