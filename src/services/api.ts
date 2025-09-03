@@ -360,33 +360,7 @@ class ApiService {
   }
 
   // Test API connection
-  async testConnection(): Promise<ApiResponse<any>> {
-    try {
-      const response = await fetch(`${API_BASE_URL}/health`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      
-      if (response.ok) {
-        return {
-          success: true,
-          data: { status: 'connected', url: API_BASE_URL }
-        };
-      } else {
-        return {
-          success: false,
-          error: `API not reachable: ${response.status}`
-        };
-      }
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Connection failed'
-      };
-    }
-  }
+
 
   // Generic authenticated request method
   async authenticatedRequest<T>(
