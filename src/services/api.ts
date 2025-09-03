@@ -28,6 +28,15 @@ export interface CreateUserRequest {
   stationIds?: string[]; // Set<UUID> in backend
 }
 
+export interface UpdateUserRequest {
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: 'SUPER_ADMIN' | 'ADMIN' | 'MANAGER' | 'CASHIER';
+  enabled?: boolean;
+  stationIds?: string[]; // Set<UUID> in backend
+}
+
 export interface User {
   id: string; // UUID in backend
   firstName: string;
@@ -266,6 +275,30 @@ class ApiService {
       return result;
     } catch (error) {
       console.error('❌ Create User Error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Network error',
+      };
+    }
+  }
+
+  async updateUser(id: string, user: UpdateUserRequest): Promise<ApiResponse<User>> {
+    console.log('🔍 Making PUT request to:', `${API_BASE_URL}/auth/users/${id}`);
+    console.log('📋 User data:', user);
+    console.log('🔑 Auth headers:', this.getAuthHeaders());
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/users/${id}`, {
+        method: 'PUT',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify(user),
+      });
+      
+      const result = await this.handleResponse<User>(response);
+      console.log('📝 Update User API Response:', result);
+      return result;
+    } catch (error) {
+      console.error('❌ Update User Error:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Network error',

@@ -1,51 +1,65 @@
 "use client"
 
-import { useState, ChangeEvent, FormEvent } from "react"
-import { mockStations } from "@/data/mockData"
+import { useState, ChangeEvent, FormEvent, useEffect } from "react"
+import { UpdateUserRequest, apiService, User as ApiUser, Station } from "@/services/api"
 
-interface User {
-  id: number;
+interface FormData {
   firstName: string;
   lastName: string;
-  username: string;
-  password: string;
   email: string;
-  role: string;
-  status: string;
-  assignedStations: string[];
-  createdAt: string;
-}
-
-interface FormData extends User {
-  confirmPassword: string;
+  role: 'SUPER_ADMIN' | 'ADMIN' | 'MANAGER' | 'CASHIER';
+  enabled: boolean;
+  stationIds: string[];
 }
 
 interface FormErrors {
   firstName?: string;
   lastName?: string;
-  username?: string;
   email?: string;
-  password?: string;
-  confirmPassword?: string;
   role?: string;
-  assignedStations?: string;
+  stationIds?: string;
 }
 
 interface EditUserModalProps {
-  user: User;
+  user: ApiUser;
   onClose: () => void;
-  onSave: (user: User) => void;
+  onSave: (user: ApiUser) => void;
 }
 
 export default function EditUserModal({ user, onClose, onSave }: EditUserModalProps) {
   const [formData, setFormData] = useState<FormData>({
-    ...user,
-    password: "",
-    confirmPassword: "",
+    firstName: user.firstName,
+    lastName: user.lastName,
+    email: user.email,
+    role: user.role as 'SUPER_ADMIN' | 'ADMIN' | 'MANAGER' | 'CASHIER',
+    enabled: user.enabled,
+    stationIds: user.assignedStations?.map(station => station.id).filter(Boolean) as string[] || [],
   })
   const [errors, setErrors] = useState<FormErrors>({})
+  const [stations, setStations] = useState<Station[]>([])
+  const [loading, setLoading] = useState(false)
 
-  const roles = ["Super Admin", "Store Manager", "Cashier"]
+  const roles: Array<{value: 'SUPER_ADMIN' | 'ADMIN' | 'MANAGER' | 'CASHIER', label: string}> = [
+    { value: "SUPER_ADMIN", label: "Super Admin" },
+    { value: "ADMIN", label: "Admin" },
+    { value: "MANAGER", label: "Manager" },
+    { value: "CASHIER", label: "Cashier" }
+  ]
+
+  useEffect(() => {
+    fetchStations();
+  }, []);
+
+  const fetchStations = async () => {
+    try {
+      const response = await apiService.getStations();
+      if (response.success && response.data) {
+        setStations(response.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch stations:', error);
+    }
+  }
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -64,9 +78,9 @@ export default function EditUserModal({ user, onClose, onSave }: EditUserModalPr
   const handleStationChange = (stationId: string) => {
     setFormData((prev) => ({
       ...prev,
-      assignedStations: prev.assignedStations.includes(stationId)
-        ? prev.assignedStations.filter((id) => id !== stationId)
-        : [...prev.assignedStations, stationId],
+      stationIds: prev.stationIds.includes(stationId)
+        ? prev.stationIds.filter((id) => id !== stationId)
+        : [...prev.stationIds, stationId],
     }))
   }
 
@@ -75,31 +89,43 @@ export default function EditUserModal({ user, onClose, onSave }: EditUserModalPr
 
     if (!formData.firstName.trim()) newErrors.firstName = "First name is required"
     if (!formData.lastName.trim()) newErrors.lastName = "Last name is required"
-    if (!formData.username.trim()) newErrors.username = "Username is required"
     if (!formData.email.trim()) newErrors.email = "Email is required"
     if (!formData.email.includes("@")) newErrors.email = "Valid email is required"
-    if (formData.password && formData.password.length < 6) newErrors.password = "Password must be at least 6 characters"
-    if (formData.password && formData.password !== formData.confirmPassword)
-      newErrors.confirmPassword = "Passwords do not match"
     if (!formData.role) newErrors.role = "Role is required"
-    if (formData.assignedStations.length === 0) newErrors.assignedStations = "At least one station must be assigned"
+    if (formData.stationIds.length === 0) newErrors.stationIds = "At least one station must be assigned"
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (validateForm()) {
-      let updatedUser: User;
-      if (!formData.password) {
-        const { password: _password, confirmPassword: _confirmPassword, ...userWithoutPassword } = formData;
-        updatedUser = userWithoutPassword as User;
-      } else {
-        const { confirmPassword: _confirmPassword, ...userWithPassword } = formData;
-        updatedUser = userWithPassword as User;
+      setLoading(true);
+      try {
+        const updateData: UpdateUserRequest = {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          role: formData.role,
+          enabled: formData.enabled,
+          stationIds: formData.stationIds,
+        };
+
+        const response = await apiService.updateUser(user.id, updateData);
+        
+        if (response.success && response.data) {
+          onSave(response.data);
+          onClose();
+        } else {
+          console.error('Failed to update user:', response.error);
+          // Handle error - maybe show a toast or error message
+        }
+      } catch (error) {
+        console.error('Error updating user:', error);
+      } finally {
+        setLoading(false);
       }
-      onSave(updatedUser)
     }
   }
 
@@ -140,18 +166,6 @@ export default function EditUserModal({ user, onClose, onSave }: EditUserModalPr
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Username *</label>
-            <input
-              type="text"
-              name="username"
-              value={formData.username}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            {errors.username && <p className="text-red-500 text-xs mt-1">{errors.username}</p>}
-          </div>
-
-          <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
             <input
               type="email"
@@ -164,32 +178,17 @@ export default function EditUserModal({ user, onClose, onSave }: EditUserModalPr
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              New Password (leave blank to keep current)
-            </label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
-          </div>
-
-          {formData.password && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+            <label className="flex items-center space-x-2">
               <input
-                type="password"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                type="checkbox"
+                name="enabled"
+                checked={formData.enabled}
+                onChange={(e) => setFormData(prev => ({ ...prev, enabled: e.target.checked }))}
+                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
-              {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>}
-            </div>
-          )}
+              <span className="text-sm font-medium text-gray-700">User Enabled</span>
+            </label>
+          </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Role *</label>
@@ -201,8 +200,8 @@ export default function EditUserModal({ user, onClose, onSave }: EditUserModalPr
             >
               <option value="">Select Role</option>
               {roles.map((role) => (
-                <option key={role} value={role}>
-                  {role}
+                <option key={role.value} value={role.value}>
+                  {role.label}
                 </option>
               ))}
             </select>
@@ -212,12 +211,12 @@ export default function EditUserModal({ user, onClose, onSave }: EditUserModalPr
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Assigned Stations *</label>
             <div className="space-y-2 max-h-32 overflow-y-auto border border-gray-300 rounded-lg p-2">
-              {mockStations.map((station) => (
+              {stations.map((station) => (
                 <label key={station.id} className="flex items-center">
                   <input
                     type="checkbox"
-                    checked={formData.assignedStations.includes(station.id)}
-                    onChange={() => handleStationChange(station.id)}
+                    checked={formData.stationIds.includes(station.id || '')}
+                    onChange={() => handleStationChange(station.id || '')}
                     className="mr-2"
                   />
                   <span className="text-sm">
@@ -226,7 +225,7 @@ export default function EditUserModal({ user, onClose, onSave }: EditUserModalPr
                 </label>
               ))}
             </div>
-            {errors.assignedStations && <p className="text-red-500 text-xs mt-1">{errors.assignedStations}</p>}
+            {errors.stationIds && <p className="text-red-500 text-xs mt-1">{errors.stationIds}</p>}
           </div>
 
           <div className="flex space-x-4 pt-4">
@@ -237,8 +236,12 @@ export default function EditUserModal({ user, onClose, onSave }: EditUserModalPr
             >
               Cancel
             </button>
-            <button type="submit" className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-              Save Changes
+            <button 
+              type="submit" 
+              disabled={loading}
+              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Saving...' : 'Save Changes'}
             </button>
           </div>
         </form>
