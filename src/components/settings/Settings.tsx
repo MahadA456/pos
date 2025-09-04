@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { User } from "@/utils/auth"
+import DisplayPreferences from "@/components/phase2/DisplayPreferences"
 
 
 interface SettingsProps {
@@ -12,7 +13,6 @@ export default function Settings({ user }: SettingsProps) {
 
   
   const [userPreferences, setUserPreferences] = useState({
-    theme: 'light' as 'light' | 'dark' | 'auto',
     language: "en",
     notifications: true,
     emailAlerts: false,
@@ -50,7 +50,6 @@ export default function Settings({ user }: SettingsProps) {
 
   const [successMessage, setSuccessMessage] = useState("")
 
-  // Update userPreferences when theme changes
 
 
   const handleStoreInfoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -93,18 +92,21 @@ export default function Settings({ user }: SettingsProps) {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">Settings</h1>
+      <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+        <h1 className="text-2xl font-bold text-gray-900 mb-6">User Settings</h1>
 
         {successMessage && (
-          <div className="mb-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 px-4 py-3 rounded-lg">
+          <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
             {successMessage}
           </div>
         )}
 
+        {/* Display Preferences */}
+        <DisplayPreferences onSave={(prefs) => console.log('Preferences saved:', prefs)} />
+
         {/* User Preferences */}
         <div className="mb-8">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">User Preferences</h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">User Preferences</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
            
 

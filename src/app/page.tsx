@@ -9,8 +9,9 @@ import UserManagement from "@/components/admin/UserManagement"
 import LoginHistory from "@/components/admin/LoginHistory"
 import StationManagement from "@/components/admin/StationManagement"
 import StoreManagement from "@/components/store/StoreManagement"
-import SystemStatus from "@/components/dashboard/SystemStatus"
 import Settings from "@/components/settings/Settings"
+import SystemConfig from "@/components/phase2/SystemConfig"
+import FileManagement from "@/components/phase2/FileManagement"
 import Layout from "@/components/layout/Layout"
 
 export default function Home() {
@@ -66,8 +67,10 @@ export default function Home() {
           return <StationManagement />
         case "stores":
           return <StoreManagement />
-        case "system":
-          return <SystemStatus />
+        case "system-config":
+          return <SystemConfig user={currentUser} />
+        case "file-management":
+          return <FileManagement user={currentUser} />
         case "settings":
           return <Settings user={currentUser} />
         default:
