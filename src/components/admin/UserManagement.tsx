@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { apiService, User as ApiUser, CreateUserRequest } from "@/services/api"
 import AddUserModal from "./AddUserModal"
+import EditUserModal from "./EditUserModal"
 
 export default function UserManagement() {
   const [users, setUsers] = useState<ApiUser[]>([])
@@ -10,6 +11,8 @@ export default function UserManagement() {
   const [error, setError] = useState("")
 
   const [showAddModal, setShowAddModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [selectedUser, setSelectedUser] = useState<ApiUser | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [roleFilter, setRoleFilter] = useState("all")
 
@@ -56,6 +59,39 @@ export default function UserManagement() {
     }
   }
 
+  const handleEditUser = (user: ApiUser) => {
+    setSelectedUser(user)
+    setShowEditModal(true)
+  }
+
+  const handleUpdateUser = async (updatedUser: ApiUser) => {
+    try {
+      if (!selectedUser) return
+
+      const response = await apiService.updateUser(selectedUser.id, {
+        firstName: updatedUser.firstName,
+        lastName: updatedUser.lastName,
+        email: updatedUser.email,
+        role: updatedUser.role,
+        enabled: updatedUser.enabled,
+        stationIds: updatedUser.assignedStations?.map(station => station.id).filter(Boolean) as string[] || []
+      })
+      
+      if (response.success && response.data) {
+        console.log('✅ User updated successfully:', response.data)
+        await loadUsers() // Reload users list
+        setShowEditModal(false)
+        setSelectedUser(null)
+        setError("")
+      } else {
+        setError(response.error || "Failed to update user")
+      }
+    } catch (err) {
+      console.error('❌ Update User Error:', err)
+      setError("Failed to update user")
+    }
+  }
+
   const getStatusColor = (enabled: boolean) => {
     return enabled 
       ? "bg-green-100 text-green-800" 
@@ -69,7 +105,8 @@ export default function UserManagement() {
   const getRoleColor = (role: string) => {
     switch (role) {
       case "SUPER_ADMIN": return "bg-purple-100 text-purple-800"
-      case "STORE_MANAGER": return "bg-blue-100 text-blue-800"
+      case "ADMIN": return "bg-red-100 text-red-800"
+      case "MANAGER": return "bg-blue-100 text-blue-800"
       case "CASHIER": return "bg-green-100 text-green-800"
       default: return "bg-gray-100 text-gray-800"
     }
@@ -78,7 +115,8 @@ export default function UserManagement() {
   const getRoleDisplayName = (role: string) => {
     switch (role) {
       case "SUPER_ADMIN": return "Super Admin"
-      case "STORE_MANAGER": return "Store Manager"
+      case "ADMIN": return "Admin"
+      case "MANAGER": return "Manager"
       case "CASHIER": return "Cashier"
       default: return role
     }
@@ -151,7 +189,8 @@ export default function UserManagement() {
           >
             <option value="all">All Roles</option>
             <option value="SUPER_ADMIN">Super Admin</option>
-            <option value="STORE_MANAGER">Store Manager</option>
+            <option value="ADMIN">Admin</option>
+            <option value="MANAGER">Manager</option>
             <option value="CASHIER">Cashier</option>
           </select>
         </div>
@@ -209,7 +248,7 @@ export default function UserManagement() {
                 <td className="px-4 py-4">
                   <div className="flex space-x-2">
                     <button
-                      onClick={() => {/* TODO: Implement edit functionality */}}
+                      onClick={() => handleEditUser(user)}
                       className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
                     >
                       Edit
@@ -256,6 +295,18 @@ export default function UserManagement() {
         <AddUserModal 
           onClose={() => setShowAddModal(false)}
           onSave={handleCreateUser}
+        />
+      )}
+
+      {/* Edit User Modal */}
+      {showEditModal && selectedUser && (
+        <EditUserModal 
+          user={selectedUser}
+          onClose={() => {
+            setShowEditModal(false)
+            setSelectedUser(null)
+          }}
+          onSave={handleUpdateUser}
         />
       )}
         </>

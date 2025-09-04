@@ -43,7 +43,7 @@ export interface User {
   lastName: string;
   username: string;
   email: string;
-  role: 'SUPER_ADMIN' | 'STORE_MANAGER' | 'CASHIER';
+  role: 'SUPER_ADMIN' | 'ADMIN' | 'MANAGER' | 'CASHIER';
   enabled: boolean;
   assignedStations?: Station[];
 }
