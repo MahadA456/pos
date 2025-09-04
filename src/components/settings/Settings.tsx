@@ -12,7 +12,6 @@ export default function Settings({ user }: SettingsProps) {
 
   
   const [userPreferences, setUserPreferences] = useState({
-    theme: 'light' as 'light' | 'dark' | 'auto',
     language: "en",
     notifications: true,
     emailAlerts: false,
@@ -50,7 +49,6 @@ export default function Settings({ user }: SettingsProps) {
 
   const [successMessage, setSuccessMessage] = useState("")
 
-  // Update userPreferences when theme changes
 
 
   const handleStoreInfoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
