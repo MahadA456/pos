@@ -1,15 +1,18 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { User } from "@/utils/auth"
+
 
 interface SettingsProps {
   user: User;
 }
 
 export default function Settings({ user }: SettingsProps) {
+
+  
   const [userPreferences, setUserPreferences] = useState({
-    theme: "light",
+    theme: 'light' as 'light' | 'dark' | 'auto',
     language: "en",
     notifications: true,
     emailAlerts: false,
@@ -47,12 +50,8 @@ export default function Settings({ user }: SettingsProps) {
 
   const [successMessage, setSuccessMessage] = useState("")
 
-  const handleUserPreferenceChange = (key: string, value: string | boolean) => {
-    setUserPreferences((prev) => ({
-      ...prev,
-      [key]: value,
-    }))
-  }
+  // Update userPreferences when theme changes
+
 
   const handleStoreInfoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -94,33 +93,22 @@ export default function Settings({ user }: SettingsProps) {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Settings</h1>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">Settings</h1>
 
         {successMessage && (
-          <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+          <div className="mb-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 px-4 py-3 rounded-lg">
             {successMessage}
           </div>
         )}
 
         {/* User Preferences */}
         <div className="mb-8">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">User Preferences</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">User Preferences</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Theme</label>
-              <select
-                value={userPreferences.theme}
-                onChange={(e) => handleUserPreferenceChange("theme", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="light">Light</option>
-                <option value="dark">Dark</option>
-                <option value="auto">Auto</option>
-              </select>
-            </div>
+           
 
-            <div>
+            {/* <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Language</label>
               <select
                 value={userPreferences.language}
@@ -131,9 +119,9 @@ export default function Settings({ user }: SettingsProps) {
                 <option value="es">Spanish</option>
                 <option value="fr">French</option>
               </select>
-            </div>
+            </div> */}
 
-            <div>
+            {/* <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Display Density</label>
               <select
                 value={userPreferences.displayDensity}
@@ -144,8 +132,8 @@ export default function Settings({ user }: SettingsProps) {
                 <option value="comfortable">Comfortable</option>
                 <option value="spacious">Spacious</option>
               </select>
-            </div>
-
+            </div> */}
+{/* 
             <div className="space-y-3">
               <label className="flex items-center">
                 <input
@@ -165,7 +153,7 @@ export default function Settings({ user }: SettingsProps) {
                 />
                 <span className="text-sm text-gray-700">Email alerts</span>
               </label>
-            </div>
+            </div> */}
           </div>
           <button
             onClick={saveUserPreferences}
@@ -175,106 +163,108 @@ export default function Settings({ user }: SettingsProps) {
           </button>
         </div>
 
-        {/* Store Information */}
-        <div className="mb-8">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Store Information</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Store Name</label>
-              <input
-                type="text"
-                name="storeName"
-                value={storeInfo.storeName}
-                onChange={handleStoreInfoChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
-              <input
-                type="text"
-                name="phone"
-                value={storeInfo.phone}
-                onChange={handleStoreInfoChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
-              <input
-                type="text"
-                name="address"
-                value={storeInfo.address}
-                onChange={handleStoreInfoChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
-              <input
-                type="text"
-                name="city"
-                value={storeInfo.city}
-                onChange={handleStoreInfoChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
+        {/* Store Information - Only for MANAGER and CASHIER */}
+        {(user.role === "MANAGER" || user.role === "CASHIER") && (
+          <div className="mb-8">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Store Information</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">State</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Store Name</label>
                 <input
                   type="text"
-                  name="state"
-                  value={storeInfo.state}
+                  name="storeName"
+                  value={storeInfo.storeName}
                   onChange={handleStoreInfoChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
+
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">ZIP Code</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
                 <input
                   type="text"
-                  name="zipCode"
-                  value={storeInfo.zipCode}
+                  name="phone"
+                  value={storeInfo.phone}
+                  onChange={handleStoreInfoChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
+                <input
+                  type="text"
+                  name="address"
+                  value={storeInfo.address}
+                  onChange={handleStoreInfoChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
+                <input
+                  type="text"
+                  name="city"
+                  value={storeInfo.city}
+                  onChange={handleStoreInfoChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">State</label>
+                  <input
+                    type="text"
+                    name="state"
+                    value={storeInfo.state}
+                    onChange={handleStoreInfoChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">ZIP Code</label>
+                  <input
+                    type="text"
+                    name="zipCode"
+                    value={storeInfo.zipCode}
+                    onChange={handleStoreInfoChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={storeInfo.email}
+                  onChange={handleStoreInfoChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Website</label>
+                <input
+                  type="text"
+                  name="website"
+                  value={storeInfo.website}
                   onChange={handleStoreInfoChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-              <input
-                type="email"
-                name="email"
-                value={storeInfo.email}
-                onChange={handleStoreInfoChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Website</label>
-              <input
-                type="text"
-                name="website"
-                value={storeInfo.website}
-                onChange={handleStoreInfoChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+            <button
+              onClick={saveStoreInfo}
+              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              Save Store Information
+            </button>
           </div>
-          <button
-            onClick={saveStoreInfo}
-            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            Save Store Information
-          </button>
-        </div>
+        )}
 
         {/* System Settings */}
         {user.role === "Super Admin" && (
