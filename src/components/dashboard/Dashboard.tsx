@@ -1,12 +1,61 @@
 "use client"
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { User } from "@/utils/auth";
+import { apiService, Station } from "@/services/api";
 
 interface DashboardProps {
   user: User;
 }
 
 export default function Dashboard({ user }: DashboardProps) {
+  const [stationNames, setStationNames] = useState<string[]>([])
+  const [loadingStations, setLoadingStations] = useState(true)
+
+  // Debug log to see user data structure
+  console.log('🔍 Dashboard User Data:', user)
+  console.log('🔍 Assigned Stations:', user.assignedStations)
+  console.log('🔍 Station:', user.station)
+
+  // Fetch station names based on assigned station IDs
+  useEffect(() => {
+    const fetchStationNames = async () => {
+      console.log('🔍 Starting to fetch station names for user:', user.assignedStations)
+      
+      if (!user.assignedStations || user.assignedStations.length === 0) {
+        console.log('🔍 No assigned stations found')
+        setLoadingStations(false)
+        return
+      }
+
+      try {
+        console.log('🔍 Calling getStations API...')
+        const response = await apiService.getStations()
+        console.log('🔍 getStations response:', response)
+        
+        if (response.success && response.data) {
+          console.log('🔍 All stations from API:', response.data)
+          // Filter stations that match user's assigned station IDs
+          const userStations = response.data.filter((station: Station) => 
+            station.id && user.assignedStations.includes(station.id)
+          )
+          console.log('🔍 Filtered user stations:', userStations)
+          
+          const names = userStations.map((station: Station) => station.name)
+          console.log('🔍 Station names extracted:', names)
+          setStationNames(names)
+        } else {
+          console.error('🔍 Failed to get stations:', response.error)
+        }
+      } catch (error) {
+        console.error('🔍 Error fetching station names:', error)
+      } finally {
+        setLoadingStations(false)
+      }
+    }
+
+    fetchStationNames()
+  }, [user.assignedStations])
+
   const currentDate = new Date().toLocaleDateString("en-US", {
     weekday: "long",
     year: "numeric",
@@ -103,7 +152,19 @@ export default function Dashboard({ user }: DashboardProps) {
                          <h1 className="text-2xl font-bold text-gray-900">Welcome back, {user.firstName || user.username}!</h1>
             <p className="text-gray-600 mt-1">{currentDate}</p>
             <p className="text-sm text-gray-500 mt-1">
-              Station: {user.station?.name || 'Not assigned'} • Role: {user.role}
+              Stations: {(() => {
+                console.log('🔍 Rendering stations - loadingStations:', loadingStations, 'stationNames:', stationNames, 'assignedStations:', user.assignedStations)
+                if (loadingStations) {
+                  return 'Loading stations...'
+                }
+                if (!user.assignedStations || user.assignedStations.length === 0) {
+                  return 'No stations assigned'
+                }
+                if (stationNames.length > 0) {
+                  return stationNames.join(', ')
+                }
+                return `${user.assignedStations.length} station(s) assigned (IDs: ${user.assignedStations.join(', ')})`
+              })()} • Role: {user.role}
             </p>
           </div>
           <div className="text-6xl">👋</div>
@@ -169,8 +230,21 @@ export default function Dashboard({ user }: DashboardProps) {
           <div className="flex items-center space-x-3 p-3 bg-white/80 rounded-xl shadow-sm">
             <div className="text-lg">🖥️</div>
             <div>
-              <p className="text-sm font-medium">Station assigned</p>
-              <p className="text-xs text-gray-500">Connected to {user.station?.name || 'Not assigned'}</p>
+              <p className="text-sm font-medium">Assigned Stations</p>
+              <p className="text-xs text-gray-500">
+                {(() => {
+                  if (loadingStations) {
+                    return 'Loading station information...'
+                  }
+                  if (!user.assignedStations || user.assignedStations.length === 0) {
+                    return 'No stations assigned'
+                  }
+                  if (stationNames.length > 0) {
+                    return `Connected to: ${stationNames.join(', ')}`
+                  }
+                  return `Connected to ${user.assignedStations.length} station(s)`
+                })()}
+              </p>
             </div>
           </div>
           <div className="flex items-center justify-center space-x-3 p-8 bg-white/80 rounded-xl shadow-sm">
