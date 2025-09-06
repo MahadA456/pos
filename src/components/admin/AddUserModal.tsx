@@ -100,8 +100,14 @@ export default function AddUserModal({ onClose, onSave }: AddUserModalProps) {
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    console.log('🔍 AddUserModal - Form submission started')
+    console.log('📋 AddUserModal - Form data:', formData)
+    
     if (validateForm()) {
+      console.log('✅ AddUserModal - Validation passed, calling onSave')
       onSave(formData)
+    } else {
+      console.log('❌ AddUserModal - Validation failed:', errors)
     }
   }
 

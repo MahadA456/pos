@@ -43,7 +43,11 @@ export default function UserManagement() {
 
   const handleCreateUser = async (userData: CreateUserRequest) => {
     try {
+      console.log('🚀 UserManagement - Creating user with data:', userData)
+      console.log('🔑 UserManagement - Current JWT token exists:', !!localStorage.getItem('jwt_token'))
+      
       const response = await apiService.createUser(userData)
+      console.log('📡 UserManagement - API Response:', response)
       
       if (response.success && response.data) {
         console.log('✅ User created successfully:', response.data)
@@ -51,6 +55,7 @@ export default function UserManagement() {
         setShowAddModal(false)
         setError("")
       } else {
+        console.error('❌ UserManagement - Create user failed:', response.error)
         setError(response.error || "Failed to create user")
       }
     } catch (err) {
