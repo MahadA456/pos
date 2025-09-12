@@ -1,4 +1,6 @@
 "use client"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { User } from "@/utils/auth";
 
 interface NavigationProps {
@@ -8,10 +10,13 @@ interface NavigationProps {
 }
     
 export default function Navigation({ user, currentPage, onPageChange }: NavigationProps) {
+  const pathname = usePathname()
+  
   const menuItems = [
     {
       id: "dashboard",
       name: "Dashboard",
+      href: "/dashboard",
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
@@ -23,6 +28,7 @@ export default function Navigation({ user, currentPage, onPageChange }: Navigati
     {
       id: "users",
       name: "User Management",
+      href: "/users",
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
@@ -33,6 +39,7 @@ export default function Navigation({ user, currentPage, onPageChange }: Navigati
     {
       id: "loginHistory",
       name: "Login History",
+      href: "/login-history",
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
@@ -43,6 +50,7 @@ export default function Navigation({ user, currentPage, onPageChange }: Navigati
     {
       id: "stations",
       name: "Station Management",
+      href: "/stations",
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -53,6 +61,7 @@ export default function Navigation({ user, currentPage, onPageChange }: Navigati
     {
       id: "stores",
       name: "Store Management",
+      href: "/stores",
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -63,6 +72,7 @@ export default function Navigation({ user, currentPage, onPageChange }: Navigati
     {
       id: "system",
       name: "System Status",
+      href: "/system",
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -73,6 +83,7 @@ export default function Navigation({ user, currentPage, onPageChange }: Navigati
     {
       id: "system-config",
       name: "System Config",
+      href: "/system-config",
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -84,6 +95,7 @@ export default function Navigation({ user, currentPage, onPageChange }: Navigati
     {
       id: "file-management", 
       name: "File Management",
+      href: "/file-management",
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
@@ -95,6 +107,7 @@ export default function Navigation({ user, currentPage, onPageChange }: Navigati
     {
       id: "settings",
       name: "User Settings",
+      href: "/settings",
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -140,30 +153,33 @@ export default function Navigation({ user, currentPage, onPageChange }: Navigati
           <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Main Menu</h3>
         </div>
         <ul className="space-y-1">
-          {filteredItems.map((item) => (
-            <li key={item.id}>
-              <button
-                onClick={() => onPageChange(item.id)}
-                className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-all duration-200 group ${
-                  currentPage === item.id
-                    ? "bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 border-l-4 border-blue-600 shadow-sm"
-                    : "text-gray-700 hover:bg-gray-50 hover:text-blue-600"
-                }`}
-              >
-                <span className={`mr-3 transition-colors duration-200 ${
-                  currentPage === item.id ? "text-blue-600" : "text-gray-500 group-hover:text-blue-600"
-                }`}>
-                  {item.icon}
-                </span>
-                <div className="flex-1">
-                  <div className="font-medium text-sm">{item.name}</div>
-                </div>
-                {currentPage === item.id && (
-                  <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                )}
-              </button>
-            </li>
-          ))}
+          {filteredItems.map((item) => {
+            const isActive = pathname === item.href
+            return (
+              <li key={item.id}>
+                <Link
+                  href={item.href}
+                  className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-all duration-200 group ${
+                    isActive
+                      ? "bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 border-l-4 border-blue-600 shadow-sm"
+                      : "text-gray-700 hover:bg-gray-50 hover:text-blue-600"
+                  }`}
+                >
+                  <span className={`mr-3 transition-colors duration-200 ${
+                    isActive ? "text-blue-600" : "text-gray-500 group-hover:text-blue-600"
+                  }`}>
+                    {item.icon}
+                  </span>
+                  <div className="flex-1">
+                    <div className="font-medium text-sm">{item.name}</div>
+                  </div>
+                  {isActive && (
+                    <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                  )}
+                </Link>
+              </li>
+            )
+          })}
         </ul>
       </div>
 

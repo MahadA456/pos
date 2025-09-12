@@ -4,19 +4,9 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { authManager } from "@/utils/auth"
 import { User } from "@/utils/auth"
-import Dashboard from "@/components/dashboard/Dashboard"
-import UserManagement from "@/components/admin/UserManagement"
-import LoginHistory from "@/components/admin/LoginHistory"
-import StationManagement from "@/components/admin/StationManagement"
-import StoreManagement from "@/components/store/StoreManagement"
-import Settings from "@/components/settings/Settings"
-import SystemConfig from "@/components/phase2/SystemConfig"
-import FileManagement from "@/components/phase2/FileManagement"
-import Layout from "@/components/layout/Layout"
 
 export default function Home() {
   const [currentUser, setCurrentUser] = useState<User | null>(null)
-  const [currentPage, setCurrentPage] = useState("dashboard")
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
@@ -26,24 +16,16 @@ export default function Home() {
       const user = authManager.getCurrentUser()
       if (user) {
         setCurrentUser(user)
+        // Redirect to dashboard if authenticated
+        router.push("/dashboard")
+        return
       }
     } else {
       // Clear expired session
       authManager.logout()
     }
     setLoading(false)
-  }, [])
-
-  const handleLogout = () => {
-    setCurrentUser(null)
-    authManager.logout()
-    setCurrentPage("dashboard")
-    router.push("/")
-  }
-
-  const handlePageChange = (page: string) => {
-    setCurrentPage(page)
-  }
+  }, [router])
 
   if (loading) {
     return (
@@ -53,36 +35,9 @@ export default function Home() {
     )
   }
 
-  // If user is authenticated, show the main app
+  // If user is authenticated, redirect to dashboard
   if (currentUser) {
-    const renderPage = () => {
-      switch (currentPage) {
-        case "dashboard":
-          return <Dashboard user={currentUser} onPageChange={handlePageChange} />
-        case "users":
-          return <UserManagement />
-        case "loginHistory":
-          return <LoginHistory />
-        case "stations":
-          return <StationManagement />
-        case "stores":
-          return <StoreManagement />
-        case "system-config":
-          return <SystemConfig user={currentUser} />
-        case "file-management":
-          return <FileManagement user={currentUser} />
-        case "settings":
-          return <Settings user={currentUser} />
-        default:
-          return <Dashboard user={currentUser} />
-      }
-    }
-
-    return (
-      <Layout user={currentUser} onLogout={handleLogout} currentPage={currentPage} onPageChange={handlePageChange}>
-        {renderPage()}
-      </Layout>
-    )
+    return null // Will redirect to dashboard
   }
 
   // Landing page for unauthenticated users
