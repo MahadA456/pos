@@ -58,7 +58,7 @@ export default function Home() {
     const renderPage = () => {
       switch (currentPage) {
         case "dashboard":
-          return <Dashboard user={currentUser} />
+          return <Dashboard user={currentUser} onPageChange={handlePageChange} />
         case "users":
           return <UserManagement />
         case "loginHistory":
@@ -141,7 +141,7 @@ export default function Home() {
 
           {/* Footer */}
           <div className="mt-16 text-gray-500 text-sm">
-            <p>&copy; 2024 OneStep POS. All rights reserved.</p>
+            <p>&copy; 2025 OneStep POS. All rights reserved.</p>
           </div>
         </div>
       </div>

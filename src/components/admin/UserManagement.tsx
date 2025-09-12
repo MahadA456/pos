@@ -258,9 +258,6 @@ export default function UserManagement() {
                     >
                       Edit
                     </button>
-                    <button className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors">
-                      Permissions
-                    </button>
                   </div>
                 </td>
               </tr>
