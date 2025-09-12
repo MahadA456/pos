@@ -9,7 +9,7 @@ interface NavigationProps {
   onPageChange: (page: string) => void;
 }
     
-export default function Navigation({ user, currentPage, onPageChange }: NavigationProps) {
+export default function Navigation({ user}: NavigationProps) {
   const pathname = usePathname()
   
   const menuItems = [

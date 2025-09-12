@@ -112,17 +112,24 @@ export default function AddUserModal({ onClose, onSave }: AddUserModalProps) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[95vh] overflow-hidden border border-gray-100">
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-bold text-white">Add New User</h2>
-            <p className="text-blue-100 text-sm">Create a new user account</p>
+        <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 px-8 py-6 flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+              </svg>
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-white">Add New User</h2>
+              <p className="text-blue-100 text-sm">Create a new user account with proper permissions</p>
+            </div>
           </div>
           <button 
             onClick={onClose} 
-            className="text-white hover:text-blue-200 transition-colors p-1 rounded-full hover:bg-white hover:bg-opacity-20"
+            className="text-white/80 hover:text-white hover:bg-white/20 transition-all duration-200 p-2 rounded-xl"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -131,153 +138,216 @@ export default function AddUserModal({ onClose, onSave }: AddUserModalProps) {
         </div>
 
         {/* Form Content */}
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
-          <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="p-8 overflow-y-auto max-h-[calc(95vh-120px)]">
+          <form onSubmit={handleSubmit} className="space-y-8">
             {/* Personal Information */}
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">Personal Information</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-gradient-to-br from-gray-50 to-blue-50 rounded-2xl p-6 border border-gray-100">
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold text-gray-800">Personal Information</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">First Name *</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">First Name *</label>
                   <input
                     type="text"
                     name="firstName"
                     value={formData.firstName}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-900 bg-white"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-gray-900 bg-white shadow-sm"
                     placeholder="Enter first name"
                   />
-                  {errors.firstName && <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>}
+                  {errors.firstName && <p className="text-red-500 text-sm mt-2 flex items-center">
+                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    {errors.firstName}
+                  </p>}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Last Name *</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">Last Name *</label>
                   <input
                     type="text"
                     name="lastName"
                     value={formData.lastName}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-900 bg-white"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-gray-900 bg-white shadow-sm"
                     placeholder="Enter last name"
                   />
-                  {errors.lastName && <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>}
+                  {errors.lastName && <p className="text-red-500 text-sm mt-2 flex items-center">
+                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    {errors.lastName}
+                  </p>}
                 </div>
               </div>
             </div>
 
             {/* Account Information */}
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">Account Information</h3>
-              <div className="space-y-4">
+            <div className="bg-gradient-to-br from-gray-50 to-green-50 rounded-2xl p-6 border border-gray-100">
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                  <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold text-gray-800">Account Information</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Username *</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">Username *</label>
                   <input
                     type="text"
                     name="username"
                     value={formData.username}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-900 bg-white"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-gray-900 bg-white shadow-sm"
                     placeholder="Enter username"
                   />
-                  {errors.username && <p className="text-red-500 text-xs mt-1">{errors.username}</p>}
+                  {errors.username && <p className="text-red-500 text-sm mt-2 flex items-center">
+                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    {errors.username}
+                  </p>}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Email *</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">Email *</label>
                   <input
                     type="email"
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-900 bg-white"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-gray-900 bg-white shadow-sm"
                     placeholder="Enter email address"
                   />
-                  {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+                  {errors.email && <p className="text-red-500 text-sm mt-2 flex items-center">
+                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    {errors.email}
+                  </p>}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Password *</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">Password *</label>
                   <input
                     type="password"
                     name="password"
                     value={formData.password}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-900 bg-white"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-gray-900 bg-white shadow-sm"
                     placeholder="Enter password (min. 6 characters)"
                   />
-                  {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
+                  {errors.password && <p className="text-red-500 text-sm mt-2 flex items-center">
+                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    {errors.password}
+                  </p>}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Role *</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">Role *</label>
                   <select
                     name="role"
                     value={formData.role}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white text-gray-900"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900 shadow-sm"
                   >
                     <option value="CASHIER">Cashier</option>
                     <option value="MANAGER">Manager</option>
                     <option value="ADMIN">Admin</option>
                     <option value="SUPER_ADMIN">Super Admin</option>
                   </select>
-                  {errors.role && <p className="text-red-500 text-xs mt-1">{errors.role}</p>}
+                  {errors.role && <p className="text-red-500 text-sm mt-2 flex items-center">
+                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    {errors.role}
+                  </p>}
                 </div>
               </div>
             </div>            {/* Station Assignment */}
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">Station Assignment</h3>
+            <div className="bg-gradient-to-br from-gray-50 to-purple-50 rounded-2xl p-6 border border-gray-100">
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                  <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold text-gray-800">Station Assignment</h3>
+              </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">Assigned Stations *</label>
-                <div className="bg-white border border-gray-300 rounded-lg p-3 max-h-40 overflow-y-auto">
+                <label className="block text-sm font-semibold text-gray-700 mb-4">Assigned Stations *</label>
+                <div className="bg-white border border-gray-200 rounded-xl p-4 max-h-48 overflow-y-auto shadow-sm">
                   {loadingStations ? (
-                    <div className="flex items-center justify-center py-4">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-                      <span className="ml-2 text-gray-600">Loading stations...</span>
+                    <div className="flex items-center justify-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+                      <span className="ml-3 text-gray-600 font-medium">Loading stations...</span>
                     </div>
                   ) : stations.length > 0 ? (
                     <div className="space-y-3">
                       {stations.filter(station => station.id).map((station) => (
-                        <label key={station.id} className="flex items-center p-2 rounded hover:bg-gray-50 cursor-pointer">
+                        <label key={station.id} className="flex items-center p-3 rounded-lg hover:bg-purple-50 cursor-pointer transition-colors duration-200 border border-gray-100">
                           <input
                             type="checkbox"
                             checked={formData.stationIds?.includes(station.id!) || false}
                             onChange={() => handleStationChange(station.id!)}
-                            className="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                            className="mr-4 h-5 w-5 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
                           />
                           <div className="flex-1">
-                            <div className="text-sm font-medium text-gray-900">{station.name}</div>
+                            <div className="text-sm font-semibold text-gray-900">{station.name}</div>
                             <div className="text-xs text-gray-500">{station.location}</div>
                           </div>
+                          <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
                         </label>
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-4 text-gray-500">
-                      <svg className="mx-auto h-8 w-8 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h4M9 7h6m-6 4h6m-6 4h4" />
+                    <div className="text-center py-8 text-gray-500">
+                      <svg className="mx-auto h-12 w-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                       </svg>
-                      No stations available
+                      <p className="font-medium">No stations available</p>
+                      <p className="text-sm">Please create stations first</p>
                     </div>
                   )}
                 </div>
-                {errors.stationIds && <p className="text-red-500 text-xs mt-2">{errors.stationIds}</p>}
+                {errors.stationIds && <p className="text-red-500 text-sm mt-3 flex items-center">
+                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  {errors.stationIds}
+                </p>}
               </div>
             </div>
 
             {/* Action Buttons */}
-            <div className="flex space-x-4 pt-2">
+            <div className="flex space-x-4 pt-6 border-t border-gray-100">
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                className="flex-1 px-8 py-4 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-all duration-200 font-semibold shadow-sm hover:shadow-md"
               >
                 Cancel
               </button>
               <button 
                 type="submit" 
-                className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all font-medium shadow-md hover:shadow-lg"
+                className="flex-1 px-8 py-4 bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 text-white rounded-xl hover:from-blue-700 hover:via-blue-800 hover:to-indigo-800 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
               >
-                Create User
+                <div className="flex items-center justify-center space-x-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                  </svg>
+                  <span>Create User</span>
+                </div>
               </button>
             </div>
           </form>
