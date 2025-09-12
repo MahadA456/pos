@@ -1,5 +1,5 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://posgunstore.qramed.in/api';
-
+// const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://159.65.30.119:8080/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
@@ -259,16 +259,21 @@ class ApiService {
   }
 
   async createUser(user: CreateUserRequest): Promise<ApiResponse<User>> {
-    console.log('🔍 Making POST request to:', `${API_BASE_URL}/auth/users`);
+    const fullUrl = `${API_BASE_URL}/auth/users`;
+    console.log('🔍 Making POST request to:', fullUrl);
+    console.log('🌐 API_BASE_URL:', API_BASE_URL);
     console.log('📋 User data:', user);
     console.log('🔑 Auth headers:', this.getAuthHeaders());
     
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/users`, {
+      const response = await fetch(fullUrl, {
         method: 'POST',
         headers: this.getAuthHeaders(),
         body: JSON.stringify(user),
       });
+      
+      console.log('📡 Response status:', response.status);
+      console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
       
       const result = await this.handleResponse<User>(response);
       console.log('📝 Create User API Response:', result);
